@@ -59,3 +59,12 @@ typings/
 
 # next.js build output
 .next
+
+# mac
+.DS_Store
+
+# firebase
+**/node_modules/*
+**/.firebaserc
+service-account-credentials.json
+**/package-lock.json
