@@ -50,6 +50,10 @@ class ChatInbound {
       user.findByDirectoryUsername(recipientDestination.toLowerCase())
         .then(userVal => {
           recipient = userVal;
+          return recipient;
+        })
+        .catch(err => {
+          console.log('ChatInbound.js > sendSmsMessage: ', err);
         });
     }
 
@@ -73,10 +77,13 @@ class ChatInbound {
               body: `${sender.chatUsername}: ${smsMessageBody}`,
             },
           };
+
+          return payload;
         })
         .catch(err => {
           console.log('ChatInbound.js > sendSmsMessage: ', err);
         });
+
     } else {
       payload = {
         status: 200,
@@ -134,6 +141,9 @@ class ChatInbound {
         };
 
         return payload;
+      })
+      .catch(err => {
+        console.error('ChatInbound.js > showSmsDir: ', err);
       });
   }
 

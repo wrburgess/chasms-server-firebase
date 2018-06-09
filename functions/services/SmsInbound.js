@@ -23,7 +23,7 @@ class SmsInbound {
           if (i <= numAttachments) {
             attachments[i] = [{
               fallback: 'Text required for image failure',
-              image_url: eval(`req.body.MediaUrl${i - 1}`),
+              image_url: `req.body.MediaUrl${i - 1}`,
             }];
           }
         }
