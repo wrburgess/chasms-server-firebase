@@ -1,8 +1,19 @@
 const admin = require('firebase-admin');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const express = require('express');
 const functions = require('firebase-functions');
+const morgan = require('morgan');
 
-const chatInbound = require('./services/chatInbound');
-const smsInbound = require('./services/smsInbound');
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
+
+const app = express();
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.static('public'));
+
+require('./routes/smsRoutes')(app, urlencodedParser);
+require('./routes/chatRoutes')(app, urlencodedParser);
 
 // If dev environment, use local config
 if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
@@ -15,5 +26,4 @@ if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
   admin.initializeApp();
 }
 
-exports.chatInbound = functions.https.onRequest(chatInbound);
-exports.smsInbound = functions.https.onRequest(smsInbound);
+exports.widgets = functions.https.onRequest(app);
