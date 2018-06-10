@@ -12,6 +12,6 @@ module.exports = (app, urlencodedParser) => {
       } else {
         res.sendStatus(req.chasm.status);
       }
-    },
+    }
   );
 };

@@ -7,18 +7,21 @@ class SmsOutbound {
     this.serviceNumber = keys.TWILIO_ACCOUNT_PHONE_NUMBER;
   }
 
-  async sendMessage(req) {
+  sendMessage(req) {
     const message = {
       from: this.serviceNumber,
       to: `1${req.smsNumber}`,
       body: req.body,
     };
 
-    try {
-      await this.service.messages.create(message);
-    } catch (err) {
-      throw err;
-    }
+    this.service.messages.create(message)
+      .then(() => {
+        this.service.messages.create(message);
+        return null;
+      })
+      .catch(err => {
+        console.error(err);
+      });
   }
 }
 

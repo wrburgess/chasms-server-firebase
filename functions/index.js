@@ -17,7 +17,7 @@ require('./routes/chatRoutes')(app, urlencodedParser);
 
 // If dev environment, use local config
 if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
-  const serviceAccount = require('./config.json');
+  const serviceAccount = require('./service-account-credentials.json');
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://chasms-server-staging.firebaseio.com',
@@ -26,4 +26,4 @@ if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
   admin.initializeApp();
 }
 
-exports.widgets = functions.https.onRequest(app);
+exports = functions.https.onRequest(app);
