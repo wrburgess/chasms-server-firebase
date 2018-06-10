@@ -1,10 +1,10 @@
-const keys = require('config').get('keys');
+const functions = require('firebase-functions');
 const Twilio = require('twilio');
 
 class SmsOutbound {
   constructor() {
-    this.service = new Twilio(keys.TWILIO_SID, keys.TWILIO_AUTH_TOKEN);
-    this.serviceNumber = keys.TWILIO_ACCOUNT_PHONE_NUMBER;
+    this.service = new Twilio(functions.config().chasms.twilio_sid, functions.config().chasms.twilio_auth_token);
+    this.serviceNumber = functions.config().chasms.twilio_account_phone_number;
   }
 
   sendMessage(req) {

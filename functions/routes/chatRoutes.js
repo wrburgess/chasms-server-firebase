@@ -2,7 +2,7 @@ const { chatRelay } = require('../middlewares/chasms');
 
 module.exports = (app, urlencodedParser) => {
   app.post(
-    '/api/chat/inbound',
+    '/chat',
     urlencodedParser,
     chatRelay,
     (req, res) => {

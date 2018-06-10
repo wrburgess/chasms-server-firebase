@@ -1,4 +1,3 @@
-const keys = require('config').get('keys');
 const admin = require('firebase-admin');
 
 class User {

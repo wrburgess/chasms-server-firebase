@@ -1,9 +1,9 @@
-const keys = require('config').get('keys');
+const functions = require('firebase-functions');
 const User = require('../models/User');
 
 class SmsInbound {
   constructor() {
-    this.service_id = keys.TWILIO_SID;
+    this.service_id = functions.config().chasms.twilio_sid;
   }
 
   authorized(req) {

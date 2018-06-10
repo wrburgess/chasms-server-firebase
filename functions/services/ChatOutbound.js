@@ -1,9 +1,9 @@
-const keys = require('config').get('keys');
+const functions = require('firebase-functions');
 const axios = require('axios');
 
 class ChatOutbound {
   constructor() {
-    this.serviceUri = keys.SLACK_APP_WEBHOOK;
+    this.serviceUri = functions.config().chasms.slack_app_webhook;
   }
 
   sendMessage(req) {

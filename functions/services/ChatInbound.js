@@ -1,13 +1,14 @@
-const keys = require('config').get('keys');
+const functions = require('firebase-functions');
+
 const User = require('../models/User');
 
 class ChatInbound {
   constructor() {
-    this.service_uri = keys.SLACK_APP_WEBHOOK;
+    this.service_uri = functions.config().chasms.slack_app_webhook;
   }
 
   static authorized(req) {
-    return req.body.team_id === keys.SLACK_TEAM_ID && req.body.channel_id === keys.SLACK_CHANNEL_ID;
+    return req.body.team_id === functions.config().chasms.slack_team_id && req.body.channel_id === functions.config().chasms.slack_channel_id;
   }
 
   static extractDestinationFromCommand(command) {

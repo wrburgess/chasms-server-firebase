@@ -5,6 +5,8 @@ const express = require('express');
 const functions = require('firebase-functions');
 const morgan = require('morgan');
 
+const { chatRelay, smsRelay } = require('./middlewares/chasms');
+
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 const app = express();
@@ -26,4 +28,4 @@ if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
   admin.initializeApp();
 }
 
-exports = functions.https.onRequest(app);
+exports.chasms = functions.https.onRequest(app);

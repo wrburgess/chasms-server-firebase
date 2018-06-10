@@ -2,7 +2,7 @@ const { smsRelay } = require('../middlewares/chasms');
 
 module.exports = (app, urlencodedParser) => {
   app.post(
-    '/api/sms/inbound',
+    '/sms',
     urlencodedParser,
     smsRelay,
     (req, res) => {
