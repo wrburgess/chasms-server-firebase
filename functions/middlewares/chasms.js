@@ -17,13 +17,17 @@ function chatRelay(req, res, next) {
           smsOutbound.sendMessage(req.chasm.smsResponse)
             .then(() => {
               next();
+              return null;
             })
             .catch((err) => {
               console.error('chasms.js > chatRelay: ', err);
             });
         } else if (req.chasm.validRequest) {
           next();
+          return null;
         }
+
+        return null;
       })
       .catch((err) => {
         req.chasm = { status: 403 };
@@ -33,7 +37,10 @@ function chatRelay(req, res, next) {
   } else {
     req.chasm = { status: 403 };
     next();
+    return null;
   }
+
+  return null;
 }
 
 function smsRelay(req, res, next) {
@@ -46,6 +53,7 @@ function smsRelay(req, res, next) {
         req.chasm = payload;
         chatOutbound.sendMessage(req);
         next();
+        return null;
       })
       .catch((err) => {
         req.chasm = { status: 403 };
@@ -56,7 +64,10 @@ function smsRelay(req, res, next) {
     req.chasm = { status: 403 };
 
     next();
+    return null;
   }
+
+  return null;
 }
 
 module.exports = {
