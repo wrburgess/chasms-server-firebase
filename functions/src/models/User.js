@@ -1,7 +1,7 @@
 const admin = require('firebase-admin');
 
 class User {
-  accessUser(values) {
+  static accessUser(values) {
     if (values) {
       let id;
       for (id in values);
@@ -63,7 +63,7 @@ class User {
   findByDirectoryUsername(username) {
     const db = admin.database();
 
-    db.ref('/users').orderByChild('username').equalTo(username).limitToFirst(1).once('value')
+    return db.ref('/users').orderByChild('username').equalTo(username).limitToFirst(1).once('value')
       .then(snapshot => {
         const values = snapshot.val();
         return this.accessUser(values);
@@ -75,23 +75,7 @@ class User {
 
   findByChatUsername(chatUsername) {
     const db = admin.database();
-    let user = {};
-
-    db.ref('/users').orderByChild('chatUsername').equalTo(chatUsername).limitToFirst(1).once('value')
-      .then(snapshot => {
-        const values = snapshot.val();
-
-        if (values) {
-          return this.accessUser(values);
-        } else {
-          user.chatUsername = chatUsername
-          return user;
-        }
-
-      })
-      .catch(err => {
-        console.error('User.findByChatUsername: ', err);
-      });
+    return db.ref('/users').orderByChild('chatUsername').equalTo(chatUsername).limitToFirst(1).once('value');
   }
 }
 

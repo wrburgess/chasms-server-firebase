@@ -16,10 +16,11 @@ app.use(express.static('public'));
 
 require('./routes/smsRoutes')(app, urlencodedParser);
 require('./routes/chatRoutes')(app, urlencodedParser);
+require('./routes/userRoutes')(app, urlencodedParser);
 
 // If dev environment, use local config
 if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
-  const serviceAccount = require('./service-account-credentials.json');
+  const serviceAccount = require('../.service-account-credentials.json');
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://chasms-server-staging.firebaseio.com',

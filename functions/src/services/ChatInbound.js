@@ -8,7 +8,10 @@ class ChatInbound {
   }
 
   static authorized(req) {
-    return req.body.team_id === functions.config().chasms.slack_team_id && req.body.channel_id === functions.config().chasms.slack_channel_id;
+    return (
+      (req.body.team_id === functions.config().chasms.slack_team_id) &&
+      (req.body.channel_id === functions.config().chasms.slack_channel_id)
+    )
   }
 
   static extractDestinationFromCommand(command) {
@@ -22,7 +25,6 @@ class ChatInbound {
     return Destination;
   }
 
-  // TODO: use regex
   static extractMessageBodyFromCommand(command) {
     const messageBody = command.split(/\s(.+)/)[1];
 
@@ -48,43 +50,52 @@ class ChatInbound {
       };
     } else {
       // Or retrieve SMS Recipient by their username
-      user.findByDirectoryUsername(recipientDestination.toLowerCase())
+      const recipient = user.findByDirectoryUsername(recipientDestination.toLowerCase())
         .then(userVal => {
           recipient = userVal;
           return recipient;
         })
         .catch(err => {
-          console.log('ChatInbound.js > sendSmsMessage: ', err);
+          console.error('ChatInbound.js > sendSmsMessage: ', err);
         });
     }
 
     const smsMessageBody = ChatInbound.extractMessageBodyFromCommand(req.body.text);
 
-    // Determine if SMS Recipiet and Message are valid
+    // Determine if SMS Recipient and Message are valid
     if (recipient && smsMessageBody) {
       // Retrieve Chat Sender by chat username
-      user.findByChatUsername(req.body.user_name)
-        .then(sender => {
-          payload = {
-            status: 200,
-            validRequest: true,
-            sendSms: true,
-            chatResponse: {
-              response_type: 'in_channel',
-              text: '',
-            },
-            smsResponse: {
-              smsNumber: recipient.smsNumber,
-              body: `${sender.chatUsername}: ${smsMessageBody}`,
-            },
-          };
+      const sender = user.findByChatUsername(req.body.user_name)
+        .then(snapshot => {
+          let sender = {};
+          const values = snapshot.val();
 
-          return payload;
+          if (values) {
+            return User.accessUser(values);
+          } else {
+            sender.chatUsername = req.body.user_name;
+            return sender;
+          }
         })
         .catch(err => {
-          console.log('ChatInbound.js > sendSmsMessage: ', err);
-        });
+          console.error('ChatInbound.js > sendSmsMessage: ', err);
+        })
+      console.log('\x1b[37m', '\x1b[31m', '\n\n====\n', 'sender: ', sender, '\n====\n', '\x1b[0m');
+      payload = {
+        status: 200,
+        validRequest: true,
+        sendSms: true,
+        chatResponse: {
+          response_type: 'in_channel',
+          text: '',
+        },
+        smsResponse: {
+          smsNumber: recipient.smsNumber,
+          body: `${sender.chatUsername}: ${smsMessageBody}`,
+        },
+      };
 
+      return payload;
     } else {
       payload = {
         status: 200,
@@ -106,46 +117,46 @@ class ChatInbound {
   static showSmsDir() {
     let displayMessage = '';
 
-    User.all()
-      .then(listOfUsers => {
-        const compareObjects = (a, b) => {
-          if (a.firstName < b.firstName) {
-            return -1;
-          }
-          if (a.firstName > b.firstName) {
-            return 1;
-          }
+    const users = User.all();
 
-          return 0;
-        };
+    try {
+      const compareObjects = (a, b) => {
+        if (a.firstName < b.firstName) {
+          return -1;
+        }
+        if (a.firstName > b.firstName) {
+          return 1;
+        }
 
-        const sorted = Object.values(listOfUsers).sort(compareObjects);
+        return 0;
+      };
 
-        sorted.forEach((listItem) => {
-          displayMessage += `${listItem.firstName} ${listItem.lastName}` +
-            ` (${listItem.smsNumber}) can be texted using ` +
-            `+${listItem.username}\n`;
-        });
+      const sorted = Object.values(users).sort(compareObjects);
 
-        const payload = {
-          status: 200,
-          validRequest: true,
-          sendSms: false,
-          chatResponse: {
-            response_type: 'ephemeral',
-            text: displayMessage,
-          },
-          smsResponse: {
-            smsNumber: null,
-            body: null,
-          },
-        };
-
-        return payload;
-      })
-      .catch(err => {
-        console.error('ChatInbound.js > showSmsDir: ', err);
+      sorted.forEach((listItem) => {
+        displayMessage += `${listItem.firstName} ${listItem.lastName}` +
+          ` (${listItem.smsNumber}) can be texted using ` +
+          `+${listItem.username}\n`;
       });
+
+      const payload = {
+        status: 200,
+        validRequest: true,
+        sendSms: false,
+        chatResponse: {
+          response_type: 'ephemeral',
+          text: displayMessage,
+        },
+        smsResponse: {
+          smsNumber: null,
+          body: null,
+        },
+      };
+
+      return payload;
+    } catch(err) {
+      console.error('ChatInbound.js > showSmsDir: ', err);
+    };
   }
 
   static addToSmsDir(req) {
@@ -192,7 +203,6 @@ class ChatInbound {
 
   static processMessage(req) {
     let payload = {};
-
     const option = req.body.text.split(' ')[0];
 
     if (option[0] === '+') {
