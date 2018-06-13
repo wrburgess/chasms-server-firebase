@@ -53,7 +53,7 @@ class User {
     db.ref('/users').orderByChild('smsNumber').equalTo(number).limitToFirst(1).once('value')
       .then(snapshot => {
         const values = snapshot.val();
-        return this.accessUser(values);
+        return User.accessUser(values);
       })
       .catch(err => {
         console.error('User.findBySmsNumber: ', err);
@@ -66,7 +66,7 @@ class User {
     return db.ref('/users').orderByChild('username').equalTo(username).limitToFirst(1).once('value')
       .then(snapshot => {
         const values = snapshot.val();
-        return this.accessUser(values);
+        return User.accessUser(values);
       })
       .catch(err => {
         console.error('User.findByDirectoryUsername: ', err);
@@ -79,4 +79,4 @@ class User {
   }
 }
 
-module.exports = User;
+export default User;

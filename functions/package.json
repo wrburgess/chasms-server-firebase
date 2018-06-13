@@ -1,17 +1,17 @@
 {
   "name": "functions",
   "main": "lib/index",
-  "description": "Cloud Functions for Firebase",
   "scripts": {
-    "lint": "eslint .",
-    "serve": "firebase serve --only functions",
-    "shell": "firebase functions:shell",
-    "start": "npm run shell",
+    "build": "tsc",
     "deploy": "firebase deploy --only functions",
+    "lint": "tslint --project tsconfig.json",
     "logs": "firebase functions:log",
-    "build": "./node_modules/.bin/tslint --project tsconfig.json && ./node_modules/.bin/tsc"
+    "serve": "npm run build && firebase serve --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell"
   },
   "dependencies": {
+    "@types/morgan": "^1.7.35",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
