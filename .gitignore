@@ -65,6 +65,9 @@ typings/
 
 # firebase
 **/node_modules/*
-**/.firebaserc
-service-account-credentials.json
+**/.service-account-credentials.json
 **/package-lock.json
+**/.runtimeconfig.json
+
+# typescript
+**/lib/*
