@@ -1,11 +1,9 @@
-const admin = require('firebase-admin');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const express = require('express');
-const functions = require('firebase-functions');
-const morgan = require('morgan');
-
-const { chatRelay, smsRelay } = require('./middlewares/chasms');
+import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions';
+import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
+import * as express from 'express';
+import * as morgan from 'morgan';
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 

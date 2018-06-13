@@ -1,10 +1,11 @@
-const admin = require('firebase-admin');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const express = require('express');
-const functions = require('firebase-functions');
-const morgan = require('morgan');
-const { chatRelay, smsRelay } = require('./middlewares/chasms');
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const admin = require("firebase-admin");
+const functions = require("firebase-functions");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const express = require("express");
+const morgan = require("morgan");
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 const app = express();
 app.use(cors());
