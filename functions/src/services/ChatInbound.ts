@@ -33,9 +33,9 @@ class ChatInbound {
     return messageBody || null;
   }
 
-  static async sendSmsMessage(req) {
-    let payload = {};
-    let recipient = {
+  static async sendSmsMessage(req: any) {
+    let payload: object = {};
+    let recipient: any = {
       chatUsername: null,
       email: null,
       firstName: null,
@@ -43,9 +43,9 @@ class ChatInbound {
       smsNumber: null,
       username: null,
     };
-    const user = new User();
-    const phoneNumberRegex = RegExp('^\\d{10}$'); // 9876543210
-    const recipientDestination = ChatInbound.extractDestinationFromCommand(req.body.text);
+    const user: User = new User();
+    const phoneNumberRegex: RegExp = RegExp('^\\d{10}$'); // 9876543210
+    const recipientDestination: string = ChatInbound.extractDestinationFromCommand(req.body.text);
 
     // Determine if Chat Sender used valid phone number
     if (phoneNumberRegex.test(recipientDestination)) {
@@ -62,12 +62,12 @@ class ChatInbound {
       recipient = await user.findByDirectoryUsername(recipientDestination.toLowerCase());
     }
 
-    const smsMessageBody = ChatInbound.extractMessageBodyFromCommand(req.body.text);
+    const smsMessageBody: string = ChatInbound.extractMessageBodyFromCommand(req.body.text);
 
     // Determine if SMS Recipiet and Message are valid
     if (recipient && smsMessageBody) {
       // Retrieve Chat Sender by chat username
-      const sender = await user.findByChatUsername(req.body.user_name);
+      const sender: any = await user.findByChatUsername(req.body.user_name);
 
       payload = {
         status: 200,
@@ -101,10 +101,10 @@ class ChatInbound {
   }
 
   static async renderSmsDir() {
-    let displayMessage = '';
+    let displayMessage: string = '';
     const users: any = await User.all();
 
-    const compareObjects = (a, b) => {
+    const compareObjects = (a: any, b: any): number => {
       if (a.firstName < b.firstName) {
         return -1;
       }
@@ -123,7 +123,7 @@ class ChatInbound {
         +${listItem.username}\n`;
     });
 
-    const payload = {
+    const payload: object = {
       status: 200,
       validRequest: true,
       sendSms: false,
@@ -140,14 +140,14 @@ class ChatInbound {
     return payload;
   }
 
-  static async addToSmsDir(req) {
+  static async addToSmsDir(req: any) {
     const user = new User();
     // get/validate command to add user
     // send help message back if invalid
     // send confirmation back with buttons if valid
     // add user to directory after checking for dupe phone number
 
-    const payload = {
+    const payload: object = {
       status: 200,
       validRequest: true,
       sendSms: false,
