@@ -1,15 +1,15 @@
-const { smsRelay } = require('../middlewares/chasms');
+import { chatRelay } from '../middlewares/chasms';
 
 module.exports = (app, urlencodedParser) => {
   app.post(
-    '/sms',
+    '/chat',
     urlencodedParser,
-    smsRelay,
+    chatRelay,
     (req, res) => {
       if (req.chasm.status < 400) {
-        res.status(204);
+        res.json(req.chasm.chatResponse);
       } else {
-        res.sendStatus(req.chasm.status);
+        res.json(req.chasm.status);
       }
     }
   );

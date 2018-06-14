@@ -1,7 +1,7 @@
-const admin = require('firebase-admin');
+import * as admin from 'firebase-admin';
 
 class User {
-  static accessUser(values) {
+  accessUser(values) {
     if (values) {
       let id;
       for (id in values);
@@ -22,7 +22,7 @@ class User {
     } = attrs;
 
     const db = admin.database();
-    var ref = db.ref('/users');
+    const ref = db.ref('/users');
 
     ref.push({
       chatUsername,
@@ -34,48 +34,76 @@ class User {
     });
   }
 
-  static all() {
-    const db = admin.database();
-
-    db.ref('/users').once('value')
-      .then(snapshot => {
-        return snapshot.val();
-      })
-      .catch(err => {
-        console.error('User.all: ', err);
-      });
+  static async all() {
+    try {
+      const db = admin.database();
+      const snapshot = await db.ref('/users').once('value');
+      const users = await snapshot.val();
+      return users;
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  findBySmsNumber(smsNumber) {
-    const number = smsNumber.substring(2); // remove leading +1
-    const db = admin.database();
+  async findBySmsNumber(smsNumber) {
+    try {
+      const number = smsNumber.substring(2); // remove leading +1
+      const db = admin.database();
+      const snapshot = await db.ref('/users')
+        .orderByChild('smsNumber')
+        .equalTo(number)
+        .limitToFirst(1)
+        .once('value');
 
-    db.ref('/users').orderByChild('smsNumber').equalTo(number).limitToFirst(1).once('value')
-      .then(snapshot => {
-        const values = snapshot.val();
-        return User.accessUser(values);
-      })
-      .catch(err => {
-        console.error('User.findBySmsNumber: ', err);
-      });
+      const values = await snapshot.val();
+      const user = this.accessUser(values);
+
+      return user;
+    } catch(err) {
+      console.error(err);
+    }
   }
 
-  findByDirectoryUsername(username) {
-    const db = admin.database();
+  async findByDirectoryUsername(username) {
+    try {
+      const db = admin.database();
+      const snapshot = await db.ref('/users')
+        .orderByChild('username')
+        .equalTo(username)
+        .limitToFirst(1)
+        .once('value');
 
-    return db.ref('/users').orderByChild('username').equalTo(username).limitToFirst(1).once('value')
-      .then(snapshot => {
-        const values = snapshot.val();
-        return User.accessUser(values);
-      })
-      .catch(err => {
-        console.error('User.findByDirectoryUsername: ', err);
-      });
+      const values = await snapshot.val();
+      const user = this.accessUser(values);
+
+      return user;
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  findByChatUsername(chatUsername) {
-    const db = admin.database();
-    return db.ref('/users').orderByChild('chatUsername').equalTo(chatUsername).limitToFirst(1).once('value');
+  async findByChatUsername(chatUsername) {
+    try {
+      const db = admin.database();
+      let user: any = {};
+      const snapshot = await db.ref('/users')
+        .orderByChild('chatUsername')
+        .equalTo(chatUsername)
+        .limitToFirst(1)
+        .once('value');
+
+      const values = await snapshot.val();
+      if (values) {
+        user = this.accessUser(values);
+      } else {
+        user.chatUsername = chatUsername;
+      }
+      console.log('user', user);
+
+      return user;
+    } catch (err) {
+      console.error(err);
+    }
   }
 }
 

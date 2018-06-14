@@ -2,10 +2,10 @@ import * as functions from 'firebase-functions';
 import User from '../models/User';
 
 class ChatInbound {
-  service_uri: string;
+  serviceUri: string;
 
   constructor() {
-    this.service_uri = functions.config().chasms.slack_app_webhook;
+    this.serviceUri = functions.config().chasms.slack_app_webhook;
   }
 
   static authorized(req: any) {
