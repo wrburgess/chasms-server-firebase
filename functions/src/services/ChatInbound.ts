@@ -141,7 +141,7 @@ class ChatInbound {
   }
 
   static async addToSmsDir(req: any) {
-    const user = new User();
+    const user: User = new User();
     // get/validate command to add user
     // send help message back if invalid
     // send confirmation back with buttons if valid
@@ -183,9 +183,9 @@ class ChatInbound {
   }
 
   static async processMessage(req: any) {
-    let payload = {};
+    let payload: object = {};
 
-    const option = req.body.text.split(' ')[0];
+    const option: string = req.body.text.split(' ')[0];
 
     if (option[0] === '+') {
       payload = ChatInbound.sendSmsMessage(req);
