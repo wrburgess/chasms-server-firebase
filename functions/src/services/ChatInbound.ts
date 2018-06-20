@@ -141,7 +141,7 @@ class ChatInbound {
   }
 
   static async addToSmsDir(req: any) {
-    const user: User = new User();
+    // const user: User = new User();
     // get/validate command to add user
     // send help message back if invalid
     // send confirmation back with buttons if valid

@@ -17,7 +17,8 @@ const chatRelay = (req, _, next) => {
               next();
             })
             .catch((err) => {
-              throw err;
+              console.error('chasms > chatRelay > smsOutbound.sendMessage > error: ', err);
+              next();
             });
         } else if (req.chasm.validRequest) {
           next();
@@ -25,7 +26,7 @@ const chatRelay = (req, _, next) => {
       })
       .catch((err) => {
         req.chasm = { status: 403 };
-        console.error('chasms.chatRelay catch error', err);
+        console.error('chasms > chatRelay > ChatInbound.processMessage > error: ', err);
         next();
       });
   } else {
@@ -40,14 +41,22 @@ const smsRelay = (req, _, next) => {
 
   if (smsInbound.authorized(req)) {
     SmsInbound.processMessage(req)
-      .then((payload) => {
+      .then(payload => {
         req.chasm = payload;
-        chatOutbound.sendMessage(req);
+
+        console.log('chasms > smsRelay > SmsInbound.processMessage > req.chasm: ', req.chasm);
+
+        chatOutbound.sendMessage(req)
+          .then()
+          .catch(err => {
+            console.error('chasms > smsRelay > chatOutbound.sendMessage > error: ', err);
+          });
+
         next();
       })
-      .catch((err) => {
+      .catch(err => {
         req.chasm = { status: 403 };
-        console.error('chasms.smsRelay catch error', err);
+        console.error('chasms > smsRelay > SmsInbound.processMessage > error: ', err);
         next();
       });
   } else {

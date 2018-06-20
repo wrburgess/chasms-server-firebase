@@ -14,8 +14,12 @@ class ChatOutbound {
 
     try {
       for (let i = 0; i < loopCount; i += 1) {
-        const chatResponse = req.chasm.chatResponse;
+        const { chatResponse } = req.chasm;
+
         if (i > 0 && req.chasm.attachments[i]) {
+
+          console.log('ChatOutbound > sendMessage > req.chasm.attachments[i]: ', req.chasm.attachments[i]);
+
           chatResponse.attachments = req.chasm.attachments[i];
         }
 
@@ -28,9 +32,13 @@ class ChatOutbound {
         axiosArray.push(axiosPromise);
       }
 
-      const response = axios.all(axiosArray)
+      axios.all(axiosArray)
+        .then()
+        .catch(err => {
+          console.error('ChatOutbound > sendMessage > axios > error: ', err);
+        });
     } catch (err) {
-      console.log('sendMessage catch error', err);
+      console.log('ChatOutbound > sendMessage > error: ', err);
     }
   }
 }

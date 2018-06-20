@@ -23,7 +23,7 @@ class SmsInbound {
     for (let i = 1; i <= loopCount; i += 1) {
       if (i <= numAttachments) {
         attachments[i] = [{
-          fallback: 'Text required for image failure',
+          fallback: 'Error: Message can not render',
           image_url: eval(`req.body.MediaUrl${i - 1}`),
         }];
       }
@@ -50,6 +50,8 @@ class SmsInbound {
         body: null,
       },
     };
+
+    console.log('payload: ', payload);
 
     return payload;
   }

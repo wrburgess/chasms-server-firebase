@@ -1,6 +1,6 @@
 {
   "name": "functions",
-  "main": "lib/index",
+  "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
     "deploy": "firebase deploy --only functions",

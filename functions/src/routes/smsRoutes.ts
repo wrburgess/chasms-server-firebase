@@ -6,10 +6,15 @@ module.exports = (app, urlencodedParser) => {
     urlencodedParser,
     smsRelay,
     (req, res) => {
+
+      console.log('smsRoutes > req.chasm: ', req.chasm);
+
       if (req.chasm.status < 400) {
-        res.status(204);
+        res.sendStatus(204).end();
       } else {
-        res.sendStatus(req.chasm.status);
+        const err = new Error('System error');
+        console.error('smsRoutes > error: ', err.message);
+        res.sendStatus(req.chasm.status).end();
       }
     }
   );
