@@ -21,10 +21,10 @@ class User {
       username
     } = attrs;
 
-    const db = admin.database();
-    const ref = db.ref('/users');
+    const db = admin.firestore();
+    const docRef = db.collection('users');
 
-    ref.push({
+    docRef.add({
       chatUsername,
       email,
       firstName,
@@ -36,12 +36,62 @@ class User {
 
   static async all() {
     try {
-      const db = admin.database();
-      const snapshot = await db.ref('/users').once('value');
-      const users = await snapshot.val();
+      const db = admin.firestore();
+      const collectionRef = db.collection('users').orderBy("lastName");
+      const querySnapshot = await collectionRef.get();
+
+      if (!querySnapshot.empty) {
+        const data = querySnapshot.docs.map((docSnapshot) => {
+          return { id: docSnapshot.id, ...docSnapshot.data() };
+        });
+
+        return data;
+      } else {
+        const err = new Error('No results for query');
+        throw err;
+      }
+    } catch (err) {
+      console.error('User > all: ', err);
+      return null;
+    }
+  }
+
+  static async findByVal(attrs) {
+    const { field, val } = attrs;
+
+    try {
+      const db = admin.firestore();
+      const collectionRef = db.collection('users').where(field, '==', val).limit(1);
+      const querySnapshot = await collectionRef.get();
+
+      if (!querySnapshot.empty) {
+        const data = querySnapshot.docs.map((docSnapshot) => {
+          return { id: docSnapshot.id, ...docSnapshot.data() };
+        });
+
+        return data[0];
+      } else {
+        const err = new Error('No results for query');
+        throw err;
+      }
+    } catch (err) {
+      console.error('User > findByVal: ', err);
+      return null;
+    }
+  }
+
+  static async whereByVal(attrs) {
+    const { field, val } = attrs;
+
+    try {
+      const db = admin.firestore();
+      const docRef = db.collection('users');
+      const users = await docRef.where(field, '==', val);
+
       return users;
     } catch (err) {
-      console.error(err);
+      console.error('User > findByVal: ', err);
+      return null;
     }
   }
 
@@ -98,7 +148,6 @@ class User {
       } else {
         user.chatUsername = chatUsername;
       }
-      console.log('user', user);
 
       return user;
     } catch (err) {
