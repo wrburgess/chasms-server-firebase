@@ -14,8 +14,7 @@ class SmsInbound {
   }
 
   static async processMessage(req: any) {
-    const user: User = new User();
-    const sender: any = await user.findBySmsNumber(req.body.From);
+    const sender: any = await User.findByVal({ field: 'smsNumber', val: req.body.From });
     const numAttachments: number = Number(req.body.NumMedia);
     const loopCount: number = numAttachments || 1;
     const attachments: Array<any> = [{}];

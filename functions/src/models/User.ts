@@ -37,7 +37,7 @@ class User {
   static async all() {
     try {
       const db = admin.firestore();
-      const collectionRef = db.collection('users').orderBy("lastName");
+      const collectionRef = db.collection('users').orderBy('lastName');
       const querySnapshot = await collectionRef.get();
 
       if (!querySnapshot.empty) {
@@ -75,7 +75,7 @@ class User {
         throw err;
       }
     } catch (err) {
-      console.error('User > findByVal: ', err);
+      console.error({ err });
       return null;
     }
   }
@@ -92,66 +92,6 @@ class User {
     } catch (err) {
       console.error('User > findByVal: ', err);
       return null;
-    }
-  }
-
-  async findBySmsNumber(smsNumber) {
-    try {
-      const number = smsNumber.substring(2); // remove leading +1
-      const db = admin.database();
-      const snapshot = await db.ref('/users')
-        .orderByChild('smsNumber')
-        .equalTo(number)
-        .limitToFirst(1)
-        .once('value');
-
-      const values = await snapshot.val();
-      const user = this.accessUser(values);
-
-      return user;
-    } catch(err) {
-      console.error(err);
-    }
-  }
-
-  async findByDirectoryUsername(username) {
-    try {
-      const db = admin.database();
-      const snapshot = await db.ref('/users')
-        .orderByChild('username')
-        .equalTo(username)
-        .limitToFirst(1)
-        .once('value');
-
-      const values = await snapshot.val();
-      const user = this.accessUser(values);
-
-      return user;
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async findByChatUsername(chatUsername) {
-    try {
-      const db = admin.database();
-      let user: any = {};
-      const snapshot = await db.ref('/users')
-        .orderByChild('chatUsername')
-        .equalTo(chatUsername)
-        .limitToFirst(1)
-        .once('value');
-
-      const values = await snapshot.val();
-      if (values) {
-        user = this.accessUser(values);
-      } else {
-        user.chatUsername = chatUsername;
-      }
-
-      return user;
-    } catch (err) {
-      console.error(err);
     }
   }
 }

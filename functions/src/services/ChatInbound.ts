@@ -26,7 +26,6 @@ class ChatInbound {
     return destination;
   }
 
-  // TODO: use regex
   static extractMessageBodyFromCommand(command) {
     const messageBody = command.split(/\s(.+)/)[1];
 
@@ -59,7 +58,7 @@ class ChatInbound {
       };
     } else {
       // Or retrieve SMS Recipient by their username
-      recipient = await user.findByDirectoryUsername(recipientDestination.toLowerCase());
+      recipient = await User.findByVal({ field: 'username', val: recipientDestination.toLowerCase() });
     }
 
     const smsMessageBody: string = ChatInbound.extractMessageBodyFromCommand(req.body.text);
@@ -67,7 +66,7 @@ class ChatInbound {
     // Determine if SMS Recipiet and Message are valid
     if (recipient && smsMessageBody) {
       // Retrieve Chat Sender by chat username
-      const sender: any = await user.findByChatUsername(req.body.user_name);
+      const sender: any = await User.findByVal({ field: 'chatUsername', val: req.body.user_name });
 
       payload = {
         status: 200,
@@ -104,20 +103,9 @@ class ChatInbound {
     let displayMessage: string = '';
     const users: any = await User.all();
 
-    const compareObjects = (a: any, b: any): number => {
-      if (a.firstName < b.firstName) {
-        return -1;
-      }
-      if (a.firstName > b.firstName) {
-        return 1;
-      }
+    console.log('renderSmsDir: ', { users });
 
-      return 0;
-    };
-
-    const usersSorted: any = Object.values(users).sort(compareObjects);
-
-    usersSorted.forEach((listItem) => {
+    users.forEach((listItem) => {
       displayMessage += `${listItem.firstName} ${listItem.lastName} \
         (${listItem.smsNumber}) can be texted using \
         +${listItem.username}\n`;
@@ -165,7 +153,7 @@ class ChatInbound {
   }
 
   static renderPrefixError(option: string) {
-    const payload = {
+    const payload: object = {
       status: 200,
       validRequest: true,
       sendSms: false,
