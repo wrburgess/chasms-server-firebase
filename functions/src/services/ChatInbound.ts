@@ -19,6 +19,8 @@ class ChatInbound {
   }
 
   static async sendSmsMessage(req: any) {
+    const { id } = req.organization;
+    const { user_name, text } = req.body;
     let payload: object = {};
     let recipient: any = {
       chatUsername: null,
@@ -30,7 +32,7 @@ class ChatInbound {
     };
     const user: User = new User();
     const phoneNumberRegex: RegExp = RegExp('^\\d{10}$'); // 9876543210
-    const recipientDestination: string = ChatInbound.extractDestinationFromCommand(req.body.text);
+    const recipientDestination: string = ChatInbound.extractDestinationFromCommand(text);
 
     // Determine if Chat Sender used valid phone number
     if (phoneNumberRegex.test(recipientDestination)) {
@@ -45,25 +47,25 @@ class ChatInbound {
     } else {
       // Or retrieve SMS Recipient by their username
       recipient = await User.findByVal({
-        organizationId: req.chasms.organization.id,
+        organizationId: id,
         field: 'username',
         val: recipientDestination.toLowerCase()
       });
     }
 
-    const smsMessageBody: string = ChatInbound.extractMessageBodyFromCommand(req.body.text);
+    const smsMessageBody: string = ChatInbound.extractMessageBodyFromCommand(text);
 
     // Determine if SMS Recipiet and Message are valid
     if (recipient && smsMessageBody) {
       // Retrieve Chat Sender by chat username
       const sender: any = await User.findByVal({
-        organizationId: req.chasms.organization.id,
+        organizationId: id,
         field: 'chatUsername',
-        val: req.body.user_name,
+        val: user_name,
       });
 
       payload = {
-        organizationId: req.chasms.organization.id,
+        organizationId: id,
         status: 200,
         validRequest: true,
         sendSms: true,
@@ -79,14 +81,14 @@ class ChatInbound {
       };
     } else {
       payload = {
-        organizationId: req.chasms.organization.id,
+        organizationId: id,
         status: 200,
         validRequest: false,
         sendSms: false,
         messageType: 'chatInbound',
         chatResponse: {
           response_type: 'ephemeral',
-          text: `Error! Incorrect message for: \`${req.body.text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
+          text: `Error! Incorrect message for: \`${text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
         },
         smsResponse: {
           smsNumber: null,
@@ -99,8 +101,9 @@ class ChatInbound {
   }
 
   static async renderSmsDir(req: any) {
+    const { id } = req.organization;
     let displayMessage: string = '';
-    const users: any = await User.all({ organizationId: req.chasms.organization.id });
+    const users: any = await User.all({ organizationId: id });
 
     console.log('renderSmsDir: ', { users });
 
@@ -111,7 +114,7 @@ class ChatInbound {
     });
 
     const payload: object = {
-      organizationId: req.chasms.organization.id,
+      organizationId: id,
       status: 200,
       validRequest: true,
       sendSms: false,
@@ -135,9 +138,9 @@ class ChatInbound {
     // send help message back if invalid
     // send confirmation back with buttons if valid
     // add user to directory after checking for dupe phone number
-
+    const { id } = req.organization;
     const payload: object = {
-      organizationId: req.chasms.organization.id,
+      organizationId: id,
       status: 200,
       validRequest: true,
       sendSms: false,
@@ -156,8 +159,9 @@ class ChatInbound {
   }
 
   static renderPrefixError(req: any, option: string) {
+    const { id } = req.organization;
     const payload: object = {
-      organizationId: req.chasms.organization.id,
+      organizationId: id,
       status: 200,
       validRequest: true,
       sendSms: false,

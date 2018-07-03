@@ -68,7 +68,7 @@ module.exports = (app, urlencodedParser) => {
   );
 
   app.post(
-    '/users/:id',
+    '/organizations/show',
     urlencodedParser,
     findOrganization,
     (req, res) => {
@@ -77,7 +77,7 @@ module.exports = (app, urlencodedParser) => {
   );
 
   app.post(
-    '/users/index',
+    '/organizations/index',
     urlencodedParser,
     getAllOrganizations,
     (req, res) => {

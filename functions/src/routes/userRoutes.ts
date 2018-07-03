@@ -2,15 +2,15 @@ import User from '../models/User';
 
 const createUser = async (req, res, next) => {
   const {
-    chatUsername, email, firstName, lastName, smsNumber, username
+    organizationId, chatUsername, email, firstName, lastName, smsNumber, username
   } = req.body;
 
   const attrs = {
-    chatUsername, email, firstName, lastName, smsNumber, username,
+    organizationId, chatUsername, email, firstName, lastName, smsNumber, username,
   };
 
   try {
-    await User.create(attrs);
+    res.data = await User.create(attrs);
     next();
   } catch (err) {
     console.error(err);
@@ -21,8 +21,8 @@ const createUser = async (req, res, next) => {
 };
 
 const findUser = async (req, res, next) => {
-  const { field, val } = req.body;
-  const attrs = { field, val };
+  const { organizationId, field, val } = req.body;
+  const attrs = { organizationId, field, val };
 
   try {
     res.data = await User.findByVal(attrs)
@@ -34,8 +34,11 @@ const findUser = async (req, res, next) => {
 };
 
 const getAllUsers = async (req, res, next) => {
+  const { organizationId } = req.body;
+  const attrs = { organizationId };
+
   try {
-    res.data = await User.all({ organizationId: 'x' });
+    res.data = await User.all(attrs);
     next();
   } catch (err) {
     console.error(err);

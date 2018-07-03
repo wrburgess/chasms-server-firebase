@@ -6,17 +6,18 @@ class SmsOutbound {
   serviceNumber: string = null;
 
   constructor(req: any) {
-    const { twilioSid, twilioAuthToken, twilioAccountPhoneNumber } = req.chasms.organization;
+    const { twilioSid, twilioAuthToken, twilioAccountPhoneNumber } = req.organization;
 
     this.service = new Twilio(twilioSid, twilioAuthToken);
     this.serviceNumber = twilioAccountPhoneNumber;
   }
 
   async sendMessage(req: any) {
+    const { body, smsNumber } = req;
     const message = {
       from: this.serviceNumber,
-      to: `1${req.smsNumber}`,
-      body: req.body,
+      to: `1${smsNumber}`,
+      body: body,
     };
 
     try {

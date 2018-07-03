@@ -1,22 +1,14 @@
 import User from '../models/User';
 
 class SmsInbound {
-  serviceId: string = null;
-
-  constructor(req) {
-    const { twilioSid } = req.chasms.organization;
-    this.serviceId = twilioSid;
-  }
-
-  authorized(req) {
-    return req.body.AccountSid === this.serviceId;
-  }
-
   static async processMessage(req: any) {
-    const sender: any = await User.findByVal({ field: 'smsNumber', val: req.body.From });
-    const numAttachments: number = Number(req.body.NumMedia);
+    const { id } = req.organization;
+    const { Body, From, NumMedia } = req.body;
+    const sender: any = await User.findByVal({ field: 'smsNumber', val: From });
+    const numAttachments: number = Number(NumMedia);
     const loopCount: number = numAttachments || 1;
     const attachments: Array<any> = [{}];
+    let chatText: string = '';
 
     for (let i = 1; i <= loopCount; i += 1) {
       if (i <= numAttachments) {
@@ -27,15 +19,14 @@ class SmsInbound {
       }
     }
 
-    let chatText: string = '';
-
     if (sender) {
-      chatText = `+${sender.username} (sms): ${req.body.Body}`;
+      chatText = `+${sender.username} (sms): ${Body}`;
     } else {
-      chatText = `${req.body.From} (sms): ${req.body.Body}`;
+      chatText = `${From} (sms): ${Body}`;
     }
 
     const payload = {
+      organizationId: id,
       status: 200,
       validRequest: true,
       messageType: 'smsInbound',

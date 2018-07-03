@@ -13,10 +13,9 @@ class Message {
       smsResponse,
     } = attrs;
 
-    const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-    const docRef = db.collection(MESSAGES);
+    const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(MESSAGES);
 
-    docRef.add({
+    collectionRef.add({
       status,
       validRequest,
       sendSms,
@@ -32,8 +31,8 @@ class Message {
     const { organizationId } = attrs;
 
     try {
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(MESSAGES).orderBy('createdAt');
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const query = docRef.collection(MESSAGES).orderBy('createdAt');
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -56,8 +55,8 @@ class Message {
     const { organizationId, field, val } = attrs;
 
     try {
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(MESSAGES).where(field, '==', val).limit(1);
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const query = docRef.collection(MESSAGES).where(field, '==', val).limit(1);
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -71,7 +70,7 @@ class Message {
         throw err;
       }
     } catch (err) {
-      console.error({ err });
+      console.error('Message > findByVal: ', err);
       return null;
     }
   }
@@ -80,14 +79,14 @@ class Message {
     const { organizationId, field, val } = attrs;
 
     try {
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const collectionRef = db.collection(MESSAGES);
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const collectionRef = docRef.collection(MESSAGES);
       const query = collectionRef.where(field, '==', val);
       const querySnapshot = await query.get();
 
       return querySnapshot;
     } catch (err) {
-      console.error('Message > findByVal: ', err);
+      console.error('Message > whereByVal: ', err);
       return null;
     }
   }

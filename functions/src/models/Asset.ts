@@ -9,8 +9,7 @@ class Asset {
       userId,
     } = attrs;
 
-    const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-    const collectionRef = db.collection(ASSETS);
+    const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(ASSETS);
 
     collectionRef.add({
       url,
@@ -24,8 +23,8 @@ class Asset {
     const { organizationId } = attrs;
 
     try {
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(ASSETS).orderBy('name');
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const query = docRef.collection(ASSETS).orderBy('name');
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -39,7 +38,7 @@ class Asset {
         throw err;
       }
     } catch (err) {
-      console.error('User > all: ', err);
+      console.error('Asset > all: ', err);
       return null;
     }
   }
@@ -48,8 +47,8 @@ class Asset {
     const { organizationId, field, val } = attrs;
 
     try {
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(ASSETS).where(field, '==', val).limit(1);
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const query = docRef.collection(ASSETS).where(field, '==', val).limit(1);
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -63,7 +62,7 @@ class Asset {
         throw err;
       }
     } catch (err) {
-      console.error({ err });
+      console.error('Asset > findByVal: ', err);
       return null;
     }
   }
@@ -72,14 +71,14 @@ class Asset {
     const { organizationId, field, val } = attrs;
 
     try {
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const collectionRef = db.collection(ASSETS);
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const collectionRef = docRef.collection(ASSETS);
       const query = collectionRef.where(field, '==', val);
       const querySnapshot = await query.get();
 
       return querySnapshot;
     } catch (err) {
-      console.error('User > findByVal: ', err);
+      console.error('Asset > whereByVal: ', err);
       return null;
     }
   }

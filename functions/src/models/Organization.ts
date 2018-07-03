@@ -14,11 +14,7 @@ class Organization {
       twilioSid,
     } = attrs;
 
-    console.log({ attrs });
-
-    const db = admin.firestore();
-    const collectionRef = db.collection(ORGANIZATIONS);
-
+    const collectionRef = admin.firestore().collection(ORGANIZATIONS);
     collectionRef.add({
       abbreviation,
       name,
@@ -50,17 +46,16 @@ class Organization {
         throw err;
       }
     } catch (err) {
-      console.error('User > all: ', err);
+      console.error('Organization > all: ', err);
       return null;
     }
   }
 
   static async findById(attrs) {
-    const { organizationId } = attrs;
+    const { id } = attrs;
 
     try {
-      const db = admin.firestore();
-      const docRef = db.collection(ORGANIZATIONS).doc(organizationId);
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(id);
       const docSnapshot = await docRef.get();
 
       if (!docSnapshot.exists) {
@@ -70,7 +65,7 @@ class Organization {
         throw err;
       }
     } catch (err) {
-      console.error({ err });
+      console.error('Organization > findById: ', err);
       return null;
     }
   }
@@ -94,7 +89,7 @@ class Organization {
         throw err;
       }
     } catch (err) {
-      console.error({ err });
+      console.error('Organization > findByVal: ', err);
       return null;
     }
   }
@@ -109,7 +104,7 @@ class Organization {
 
       return users;
     } catch (err) {
-      console.error('User > findByVal: ', err);
+      console.error('User > whereByVal: ', err);
       return null;
     }
   }

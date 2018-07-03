@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { ORGANIZATIONS, USERS } from '../constants/models';
 
 class User {
-  static create(attrs) {
+  static async create(attrs) {
     const {
       organizationId,
       chatUsername,
@@ -13,19 +13,25 @@ class User {
       username
     } = attrs;
 
-    const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-    const collectionRef = db.collection(USERS);
+    try {
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(USERS);
 
-    collectionRef.add({
-      chatUsername,
-      email,
-      firstName,
-      lastName,
-      smsNumber,
-      username,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+      const ref = await collectionRef.add({
+        chatUsername,
+        email,
+        firstName,
+        lastName,
+        smsNumber,
+        username,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return ref;
+    } catch (err) {
+      console.error('User > create: ', err);
+      return null;
+    }
   }
 
   static async all(attrs) {
@@ -56,8 +62,8 @@ class User {
     const { organizationId, field, val } = attrs;
 
     try {
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(USERS).where(field, '==', val).limit(1);
+      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const query = docRef.collection(USERS).where(field, '==', val).limit(1);
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -71,7 +77,7 @@ class User {
         throw err;
       }
     } catch (err) {
-      console.error({ err });
+      console.error('User > findByVal: ', err);
       return null;
     }
   }
@@ -86,7 +92,7 @@ class User {
 
       return query;
     } catch (err) {
-      console.error('User > findByVal: ', err);
+      console.error('User > whereByVal: ', err);
       return null;
     }
   }
