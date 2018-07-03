@@ -27,3 +27,70 @@
 * If you have an ngrok account with custom subdomains, use this `ngrok http -subdomain=allaboardapps 8080`
 * If you want a little security with your server, use this `ngrok http -subdomain=allaboardapps -auth=username:password 8080` and visitors will need to enter your choice of the username/password combo
 * Once both ngrok and express are running locally, you can test the servers via [https://allaboardapps.ngrok.io](https://allaboardapps.ngrok.io). You can point services, such as Twilio webhooks, to routes on this domain for local testing.
+
+## Schemas
+
+### Organization
+
+```js
+  {
+    abbreviation: String,
+    createdAt: Date,
+    name: String,
+    slack_app_webhook: String,          // https://hooks.slack.com/services/T0FFFXXX/B8MME748Y/S3TcLI2HXXXXXXXXXXXXXXX
+    slack_channel_id: String,           // G9RMXXXXX
+    slack_team_id: String,              // T0FFFXXX
+    twilio_account_phone_number: String // +1234567890
+    twilio_auth_token: String,          // 19a7a80933df7b088897XXXXXXXXXXXXX
+    twilio_sid: String,                 // AC777f98cc9160b995bbbXXXXXXXXXXXXXX
+    updatedAt: Date,
+  }
+```
+
+### User
+
+```js
+  {
+    chatUsername: String,
+    createdAt: Date,
+    email: String,
+    firstName: String,
+    lastName: String,
+    smsNumber: String,
+    updatedAt: Date,
+    username: String,
+  }
+```
+
+### Message
+
+```js
+  {
+    chatResponse: {
+      response_type: String, // in_channel
+      text: String
+    },
+    createdAt: Date,
+    messageType: String, // smsInbound
+    requestBody: Object,
+    sendSms: Boolean, // true
+    smsResponse: {
+      smsNumber: String, // 9876543210
+      body: String,
+    },
+    status: Number, // 200
+    updatedAt: Date,
+    validRequest: Boolean,  // true
+  }
+```
+
+### Asset
+
+```js
+  {
+    createdAt: Date,
+    updatedAt: Date,
+    url: String,
+    userId: String
+  }
+```
