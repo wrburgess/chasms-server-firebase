@@ -35,7 +35,7 @@ const findUser = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
   try {
-    res.data = await User.all();
+    res.data = await User.all({ organizationId: 'x' });
     next();
   } catch (err) {
     console.error(err);

@@ -1,20 +1,6 @@
-import * as functions from 'firebase-functions';
 import User from '../models/User';
 
 class ChatInbound {
-  serviceUri: string;
-
-  constructor() {
-    this.serviceUri = functions.config().chasms.slack_app_webhook;
-  }
-
-  static authorized(req: any) {
-    return (
-      (req.body.team_id === functions.config().chasms.slack_team_id) &&
-      (req.body.channel_id === functions.config().chasms.slack_channel_id)
-    )
-  }
-
   static extractDestinationFromCommand(command: string) {
     const commandSplit = command.split('+')[1];
     let destination = null;
@@ -58,7 +44,11 @@ class ChatInbound {
       };
     } else {
       // Or retrieve SMS Recipient by their username
-      recipient = await User.findByVal({ field: 'username', val: recipientDestination.toLowerCase() });
+      recipient = await User.findByVal({
+        organizationId: req.chasms.organization.id,
+        field: 'username',
+        val: recipientDestination.toLowerCase()
+      });
     }
 
     const smsMessageBody: string = ChatInbound.extractMessageBodyFromCommand(req.body.text);
@@ -66,12 +56,18 @@ class ChatInbound {
     // Determine if SMS Recipiet and Message are valid
     if (recipient && smsMessageBody) {
       // Retrieve Chat Sender by chat username
-      const sender: any = await User.findByVal({ field: 'chatUsername', val: req.body.user_name });
+      const sender: any = await User.findByVal({
+        organizationId: req.chasms.organization.id,
+        field: 'chatUsername',
+        val: req.body.user_name,
+      });
 
       payload = {
+        organizationId: req.chasms.organization.id,
         status: 200,
         validRequest: true,
         sendSms: true,
+        messageType: 'chatInbound',
         chatResponse: {
           response_type: 'in_channel',
           text: '',
@@ -83,8 +79,11 @@ class ChatInbound {
       };
     } else {
       payload = {
+        organizationId: req.chasms.organization.id,
         status: 200,
         validRequest: false,
+        sendSms: false,
+        messageType: 'chatInbound',
         chatResponse: {
           response_type: 'ephemeral',
           text: `Error! Incorrect message for: \`${req.body.text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
@@ -99,9 +98,9 @@ class ChatInbound {
     return payload;
   }
 
-  static async renderSmsDir() {
+  static async renderSmsDir(req: any) {
     let displayMessage: string = '';
-    const users: any = await User.all();
+    const users: any = await User.all({ organizationId: req.chasms.organization.id });
 
     console.log('renderSmsDir: ', { users });
 
@@ -112,9 +111,11 @@ class ChatInbound {
     });
 
     const payload: object = {
+      organizationId: req.chasms.organization.id,
       status: 200,
       validRequest: true,
       sendSms: false,
+      messageType: 'chatInbound',
       chatResponse: {
         response_type: 'ephemeral',
         text: displayMessage,
@@ -136,9 +137,11 @@ class ChatInbound {
     // add user to directory after checking for dupe phone number
 
     const payload: object = {
+      organizationId: req.chasms.organization.id,
       status: 200,
       validRequest: true,
       sendSms: false,
+      messageType: 'chatInbound',
       chatResponse: {
         response_type: 'ephemeral',
         text: null, // displayMessage
@@ -152,11 +155,13 @@ class ChatInbound {
     return payload;
   }
 
-  static renderPrefixError(option: string) {
+  static renderPrefixError(req: any, option: string) {
     const payload: object = {
+      organizationId: req.chasms.organization.id,
       status: 200,
       validRequest: true,
       sendSms: false,
+      messageType: 'chatInbound',
       chatResponse: {
         response_type: 'ephemeral',
         text: `Error! \`${option}\` is not a valid prefix.`,
@@ -172,17 +177,16 @@ class ChatInbound {
 
   static async processMessage(req: any) {
     let payload: object = {};
-
     const option: string = req.body.text.split(' ')[0];
 
     if (option[0] === '+') {
       payload = ChatInbound.sendSmsMessage(req);
     } else if (option === 'dir') {
-      payload = ChatInbound.renderSmsDir();
+      payload = ChatInbound.renderSmsDir(req);
     } else if (option === 'add') {
       payload = ChatInbound.addToSmsDir(req);
     } else {
-      payload = ChatInbound.renderPrefixError(option);
+      payload = ChatInbound.renderPrefixError(req, option);
     }
 
     return payload;

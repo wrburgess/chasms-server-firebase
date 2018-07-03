@@ -2,11 +2,15 @@ import ChatInbound from '../services/ChatInbound';
 import ChatOutbound from '../services/ChatOutbound';
 import SmsInbound from '../services/SmsInbound';
 import SmsOutbound from '../services/SmsOutbound';
+import Organization from '../models/Organization';
 
-const chatRelay = (req, _, next) => {
-  const smsOutbound = new SmsOutbound();
+const chatRelay = async (req, _, next) => {
+  const organization = await Organization.findByVal({ field: 'slackChannelId', val: req.body.channel_id });
+  req.chasms.organization = organization;
 
-  if (ChatInbound.authorized(req)) {
+  if (organization) {
+    const smsOutbound: SmsOutbound = new SmsOutbound(req);
+
     ChatInbound.processMessage(req)
       .then((payload) => {
         req.chasm = payload;
@@ -35,11 +39,14 @@ const chatRelay = (req, _, next) => {
   }
 }
 
-const smsRelay = (req, _, next) => {
-  const smsInbound: SmsInbound = new SmsInbound();
-  const chatOutbound: ChatOutbound = new ChatOutbound();
+const smsRelay = async (req, _, next) => {
+  const organization = await Organization.findByVal({ field: 'slackChannelId', val: req.body.channel_id });
+  req.chasms.organization = organization;
 
-  if (smsInbound.authorized(req)) {
+  const smsInbound: SmsInbound = new SmsInbound(req);
+  const chatOutbound: ChatOutbound = new ChatOutbound(req);
+
+  if (organization) {
     SmsInbound.processMessage(req)
       .then(payload => {
         req.chasm = payload;

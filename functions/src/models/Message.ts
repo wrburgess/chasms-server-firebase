@@ -1,30 +1,30 @@
 import * as admin from 'firebase-admin';
-import { ORGANIZATIONS, USERS } from '../constants/models';
+import { ORGANIZATIONS, MESSAGES } from '../constants/models';
 
-class User {
+class Message {
   static create(attrs) {
     const {
       organizationId,
-      chatUsername,
-      email,
-      firstName,
-      lastName,
-      smsNumber,
-      username
+      status,
+      validRequest,
+      sendSms,
+      messageType,
+      chatResponse,
+      smsResponse,
     } = attrs;
 
     const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-    const collectionRef = db.collection(USERS);
+    const docRef = db.collection(MESSAGES);
 
-    collectionRef.add({
-      chatUsername,
-      email,
-      firstName,
-      lastName,
-      smsNumber,
-      username,
+    docRef.add({
+      status,
+      validRequest,
+      sendSms,
+      messageType,
+      chatResponse,
+      smsResponse,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
   }
 
@@ -33,7 +33,7 @@ class User {
 
     try {
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(USERS).orderBy('lastName');
+      const query = db.collection(MESSAGES).orderBy('createdAt');
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -47,7 +47,7 @@ class User {
         throw err;
       }
     } catch (err) {
-      console.error('User > all: ', err);
+      console.error('Message > all: ', err);
       return null;
     }
   }
@@ -57,7 +57,7 @@ class User {
 
     try {
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(USERS).where(field, '==', val).limit(1);
+      const query = db.collection(MESSAGES).where(field, '==', val).limit(1);
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -81,15 +81,16 @@ class User {
 
     try {
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const collectionRef = db.collection(USERS);
-      const query = await collectionRef.where(field, '==', val);
+      const collectionRef = db.collection(MESSAGES);
+      const query = collectionRef.where(field, '==', val);
+      const querySnapshot = await query.get();
 
-      return query;
+      return querySnapshot;
     } catch (err) {
-      console.error('User > findByVal: ', err);
+      console.error('Message > findByVal: ', err);
       return null;
     }
   }
 }
 
-export default User;
+export default Message;

@@ -1,12 +1,11 @@
-import * as functions from 'firebase-functions';
-
 import User from '../models/User';
 
 class SmsInbound {
   serviceId: string = null;
 
-  constructor() {
-    this.serviceId = functions.config().chasms.twilio_sid;
+  constructor(req) {
+    const { twilioSid } = req.chasms.organization;
+    this.serviceId = twilioSid;
   }
 
   authorized(req) {
@@ -39,6 +38,7 @@ class SmsInbound {
     const payload = {
       status: 200,
       validRequest: true,
+      messageType: 'smsInbound',
       attachments,
       chatResponse: {
         response_type: 'in_channel',
@@ -49,8 +49,6 @@ class SmsInbound {
         body: null,
       },
     };
-
-    console.log('payload: ', payload);
 
     return payload;
   }

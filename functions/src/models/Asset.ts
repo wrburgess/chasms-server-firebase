@@ -1,28 +1,20 @@
 import * as admin from 'firebase-admin';
-import { ORGANIZATIONS, USERS } from '../constants/models';
+import { ORGANIZATIONS, ASSETS } from '../constants/models';
 
-class User {
+class Asset {
   static create(attrs) {
     const {
       organizationId,
-      chatUsername,
-      email,
-      firstName,
-      lastName,
-      smsNumber,
-      username
+      url,
+      userId,
     } = attrs;
 
     const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-    const collectionRef = db.collection(USERS);
+    const collectionRef = db.collection(ASSETS);
 
     collectionRef.add({
-      chatUsername,
-      email,
-      firstName,
-      lastName,
-      smsNumber,
-      username,
+      url,
+      userId,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -33,7 +25,7 @@ class User {
 
     try {
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(USERS).orderBy('lastName');
+      const query = db.collection(ASSETS).orderBy('name');
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -57,7 +49,7 @@ class User {
 
     try {
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(USERS).where(field, '==', val).limit(1);
+      const query = db.collection(ASSETS).where(field, '==', val).limit(1);
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
@@ -81,10 +73,11 @@ class User {
 
     try {
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const collectionRef = db.collection(USERS);
-      const query = await collectionRef.where(field, '==', val);
+      const collectionRef = db.collection(ASSETS);
+      const query = collectionRef.where(field, '==', val);
+      const querySnapshot = await query.get();
 
-      return query;
+      return querySnapshot;
     } catch (err) {
       console.error('User > findByVal: ', err);
       return null;
@@ -92,4 +85,4 @@ class User {
   }
 }
 
-export default User;
+export default Asset;
