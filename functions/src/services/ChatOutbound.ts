@@ -5,20 +5,18 @@ class ChatOutbound {
   serviceUri: string = null;
 
   constructor(req) {
-    const { slackAppWebhook } = req.organization;
-    this.serviceUri = slackAppWebhook;
+    this.serviceUri = req.organization.slackAppWebhook;
   }
 
   async sendMessage(req: any) {
-    const axiosArray = [];
-    const loopCount = req.chasms.attachments.length || 1;
-
     try {
-      for (let i = 0; i < loopCount; i += 1) {
-        const { chatResponse } = req.chasms;
+      const { attachments, chatResponse } = req.chasms;
+      const axiosArray = [];
+      const loopCount = attachments.length || 1;
 
-        if (i > 0 && req.chasms.attachments[i]) {
-          chatResponse.attachments = req.chasms.attachments[i];
+      for (let i = 0; i < loopCount; i += 1) {
+        if (i > 0 && attachments[i]) {
+          chatResponse.attachments = attachments[i];
         }
 
         const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
