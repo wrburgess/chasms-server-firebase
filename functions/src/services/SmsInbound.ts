@@ -1,9 +1,11 @@
 import User from '../models/User';
+import Message from '../models/Message';
 
 class SmsInbound {
   static async processMessage(req: any) {
     const { id } = req.organization;
     const { Body, From, NumMedia } = req.body;
+
     const sender: any = await User.findByVal({ organizationId: id, field: 'smsNumber', val: From });
     const numAttachments: number = Number(NumMedia);
     const loopCount: number = numAttachments || 1;
@@ -29,6 +31,7 @@ class SmsInbound {
       organizationId: id,
       status: 200,
       validRequest: true,
+      sendSms: false,
       messageType: 'smsInbound',
       attachments,
       chatResponse: {
@@ -40,6 +43,8 @@ class SmsInbound {
         body: null,
       },
     };
+
+    Message.create(payload);
 
     return payload;
   }

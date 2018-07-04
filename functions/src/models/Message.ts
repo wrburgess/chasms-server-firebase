@@ -2,29 +2,38 @@ import * as admin from 'firebase-admin';
 import { ORGANIZATIONS, MESSAGES } from '../constants/models';
 
 class Message {
-  static create(attrs) {
-    const {
-      organizationId,
-      status,
-      validRequest,
-      sendSms,
-      messageType,
-      chatResponse,
-      smsResponse,
-    } = attrs;
+  static async create(attrs) {
+    try {
+      const {
+        organizationId,
+        status,
+        validRequest,
+        sendSms,
+        messageType,
+        attachments,
+        chatResponse,
+        smsResponse,
+      } = attrs;
 
-    const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(MESSAGES);
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(MESSAGES);
 
-    collectionRef.add({
-      status,
-      validRequest,
-      sendSms,
-      messageType,
-      chatResponse,
-      smsResponse,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+      const ref = await collectionRef.add({
+        status,
+        validRequest,
+        sendSms,
+        messageType,
+        attachments,
+        chatResponse,
+        smsResponse,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+
+      return ref;
+    } catch(err) {
+      console.error('Message > create: ', err);
+      return null;
+    }
   }
 
   static async all(attrs) {

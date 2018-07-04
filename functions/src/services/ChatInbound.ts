@@ -1,4 +1,5 @@
 import User from '../models/User';
+import Message from '../models/Message';
 
 class ChatInbound {
   static extractDestinationFromCommand(command: string) {
@@ -70,6 +71,7 @@ class ChatInbound {
         validRequest: true,
         sendSms: true,
         messageType: 'chatInbound',
+        attachments: [{}],
         chatResponse: {
           response_type: 'in_channel',
           text: '',
@@ -79,6 +81,8 @@ class ChatInbound {
           body: `${sender.chatUsername}: ${smsMessageBody}`,
         },
       };
+
+      Message.create(payload);
     } else {
       payload = {
         organizationId: id,
@@ -86,6 +90,7 @@ class ChatInbound {
         validRequest: false,
         sendSms: false,
         messageType: 'chatInbound',
+        attachments: [{}],
         chatResponse: {
           response_type: 'ephemeral',
           text: `Error! Incorrect message for: \`${text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
@@ -119,6 +124,7 @@ class ChatInbound {
       validRequest: true,
       sendSms: false,
       messageType: 'chatInbound',
+      attachments: [{}],
       chatResponse: {
         response_type: 'ephemeral',
         text: displayMessage,

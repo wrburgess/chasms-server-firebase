@@ -44,7 +44,7 @@ const smsRelay = async (req, _, next) => {
     if (organization) {
       const payload = await SmsInbound.processMessage(req);
       req.chasms = payload;
-      await chatOutbound.sendMessage(req)
+      await chatOutbound.sendMessage(req);
       next();
     } else {
       req.chasms = { status: 403 };

@@ -3,17 +3,17 @@ import { ORGANIZATIONS, USERS } from '../constants/models';
 
 class User {
   static async create(attrs) {
-    const {
-      organizationId,
-      chatUsername,
-      email,
-      firstName,
-      lastName,
-      smsNumber,
-      username
-    } = attrs;
-
     try {
+      const {
+        organizationId,
+        chatUsername,
+        email,
+        firstName,
+        lastName,
+        smsNumber,
+        username
+      } = attrs;
+
       const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(USERS);
 
       const ref = await collectionRef.add({
@@ -35,9 +35,8 @@ class User {
   }
 
   static async all(attrs) {
-    const { organizationId } = attrs;
-
     try {
+      const { organizationId } = attrs;
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
       const query = db.collection(USERS).orderBy('lastName');
       const querySnapshot = await query.get();
@@ -59,9 +58,8 @@ class User {
   }
 
   static async findByVal(attrs) {
-    const { organizationId, field, val } = attrs;
-
     try {
+      const { organizationId, field, val } = attrs;
       const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
       const query = docRef.collection(USERS).where(field, '==', val).limit(1);
       const querySnapshot = await query.get();
@@ -83,9 +81,8 @@ class User {
   }
 
   static async whereByVal(attrs) {
-    const { organizationId, field, val } = attrs;
-
     try {
+      const { organizationId, field, val } = attrs;
       const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
       const collectionRef = db.collection(USERS);
       const query = await collectionRef.where(field, '==', val);
