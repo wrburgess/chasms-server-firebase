@@ -1,11 +1,11 @@
-const ORGANIZATIONS = 'organizations';
-const USERS = 'users';
-const MESSAGES = 'messages';
 const ASSETS = 'assets';
+const CONTACTS = 'contacts';
+const MESSAGES = 'messages';
+const ORGANIZATIONS = 'organizations';
 
 export {
-  ORGANIZATIONS,
-  USERS,
-  MESSAGES,
   ASSETS,
+  CONTACTS,
+  MESSAGES,
+  ORGANIZATIONS,
 }

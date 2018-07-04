@@ -1,4 +1,3 @@
-import * as functions from 'firebase-functions';
 import * as Twilio from 'twilio';
 
 class SmsOutbound {

@@ -14,7 +14,7 @@ app.use(express.static('public'));
 
 require('./routes/smsRoutes')(app, urlencodedParser);
 require('./routes/chatRoutes')(app, urlencodedParser);
-require('./routes/userRoutes')(app, urlencodedParser);
+require('./routes/contactRoutes')(app, urlencodedParser);
 require('./routes/organizationRoutes')(app, urlencodedParser);
 
 // If dev environment, use local config

@@ -1,33 +1,33 @@
 import * as admin from 'firebase-admin';
-import { ORGANIZATIONS, USERS } from '../constants/models';
+import { ORGANIZATIONS, CONTACTS } from '../constants/models';
 
-class User {
+class Contact {
   static async create(attrs) {
     try {
       const {
+        chatUsername,
+        email,
+        firstName,
+        lastName,
         organizationId,
-        chatUsername,
-        email,
-        firstName,
-        lastName,
-        smsNumber,
-        username
-      } = attrs;
-
-      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(USERS);
-
-      const ref = await collectionRef.add({
-        chatUsername,
-        email,
-        firstName,
-        lastName,
         smsNumber,
         username,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      } = attrs;
+
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
+
+      const docRef = await collectionRef.add({
+        chatUsername,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        email,
+        firstName,
+        lastName,
+        smsNumber,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        username,
       });
 
-      return ref;
+      return docRef;
     } catch (err) {
       console.error('User > create: ', err);
       return null;
@@ -37,9 +37,8 @@ class User {
   static async all(attrs) {
     try {
       const { organizationId } = attrs;
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = db.collection(USERS).orderBy('lastName');
-      const querySnapshot = await query.get();
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
+      const querySnapshot = await collectionRef.orderBy('lastName').get();
 
       if (!querySnapshot.empty) {
         const data = querySnapshot.docs.map((docSnapshot) => {
@@ -60,9 +59,8 @@ class User {
   static async findByVal(attrs) {
     try {
       const { organizationId, field, val } = attrs;
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = docRef.collection(USERS).where(field, '==', val).limit(1);
-      const querySnapshot = await query.get();
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
+      const querySnapshot = await collectionRef.where(field, '==', val).limit(1).get();
 
       if (!querySnapshot.empty) {
         const data = querySnapshot.docs.map((docSnapshot) => {
@@ -83,11 +81,10 @@ class User {
   static async whereByVal(attrs) {
     try {
       const { organizationId, field, val } = attrs;
-      const db = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const collectionRef = db.collection(USERS);
-      const query = await collectionRef.where(field, '==', val);
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
+      const querySnapshot = await collectionRef.where(field, '==', val).get();
 
-      return query;
+      return querySnapshot;
     } catch (err) {
       console.error('User > whereByVal: ', err);
       return null;
@@ -95,4 +92,4 @@ class User {
   }
 }
 
-export default User;
+export default Contact;

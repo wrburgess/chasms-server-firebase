@@ -1,4 +1,4 @@
-import User from '../models/User';
+import Contact from '../models/Contact';
 import Message from '../models/Message';
 
 class ChatInbound {
@@ -31,7 +31,7 @@ class ChatInbound {
       smsNumber: null,
       username: null,
     };
-    const user: User = new User();
+
     const phoneNumberRegex: RegExp = RegExp('^\\d{10}$'); // 9876543210
     const recipientDestination: string = ChatInbound.extractDestinationFromCommand(text);
 
@@ -47,7 +47,7 @@ class ChatInbound {
       };
     } else {
       // Or retrieve SMS Recipient by their username
-      recipient = await User.findByVal({
+      recipient = await Contact.findByVal({
         organizationId: id,
         field: 'username',
         val: recipientDestination.toLowerCase()
@@ -59,7 +59,7 @@ class ChatInbound {
     // Determine if SMS Recipiet and Message are valid
     if (recipient && smsMessageBody) {
       // Retrieve Chat Sender by chat username
-      const sender: any = await User.findByVal({
+      const sender: any = await Contact.findByVal({
         organizationId: id,
         field: 'chatUsername',
         val: user_name,
@@ -108,11 +108,9 @@ class ChatInbound {
   static async renderSmsDir(req: any) {
     const { id } = req.organization;
     let displayMessage: string = '';
-    const users: any = await User.all({ organizationId: id });
+    const contacts: any = await Contact.all({ organizationId: id });
 
-    console.log('renderSmsDir: ', { users });
-
-    users.forEach((listItem) => {
+    contacts.forEach((listItem) => {
       displayMessage += `${listItem.firstName} ${listItem.lastName} \
         (${listItem.smsNumber}) can be texted using \
         +${listItem.username}\n`;

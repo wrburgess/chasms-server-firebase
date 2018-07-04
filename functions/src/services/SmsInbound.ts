@@ -1,4 +1,4 @@
-import User from '../models/User';
+import Contact from '../models/Contact';
 import Message from '../models/Message';
 
 class SmsInbound {
@@ -6,7 +6,8 @@ class SmsInbound {
     const { id } = req.organization;
     const { Body, From, NumMedia } = req.body;
 
-    const sender: any = await User.findByVal({ organizationId: id, field: 'smsNumber', val: From });
+    const smsNumber = From.substring(2); // remove leading +1
+    const sender: any = await Contact.findByVal({ organizationId: id, field: 'smsNumber', val: smsNumber });
     const numAttachments: number = Number(NumMedia);
     const loopCount: number = numAttachments || 1;
     const attachments: Array<any> = [{}];

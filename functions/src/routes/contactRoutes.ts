@@ -1,6 +1,6 @@
-import User from '../models/User';
+import Contact from '../models/Contact';
 
-const createUser = async (req, res, next) => {
+const createContact = async (req, res, next) => {
   const {
     organizationId, chatUsername, email, firstName, lastName, smsNumber, username
   } = req.body;
@@ -10,7 +10,7 @@ const createUser = async (req, res, next) => {
   };
 
   try {
-    res.data = await User.create(attrs);
+    res.data = await Contact.create(attrs);
     next();
   } catch (err) {
     console.error(err);
@@ -20,12 +20,12 @@ const createUser = async (req, res, next) => {
   next();
 };
 
-const findUser = async (req, res, next) => {
+const findContact = async (req, res, next) => {
   const { organizationId, field, val } = req.body;
   const attrs = { organizationId, field, val };
 
   try {
-    res.data = await User.findByVal(attrs)
+    res.data = await Contact.findByVal(attrs)
     next();
   } catch(err) {
     console.error(err);
@@ -33,12 +33,12 @@ const findUser = async (req, res, next) => {
   }
 };
 
-const getAllUsers = async (req, res, next) => {
+const getAllContacts = async (req, res, next) => {
   const { organizationId } = req.body;
   const attrs = { organizationId };
 
   try {
-    res.data = await User.all(attrs);
+    res.data = await Contact.all(attrs);
     next();
   } catch (err) {
     console.error(err);
@@ -48,27 +48,27 @@ const getAllUsers = async (req, res, next) => {
 
 module.exports = (app, urlencodedParser) => {
   app.post(
-    '/users/create',
+    '/contacts/create',
     urlencodedParser,
-    createUser,
+    createContact,
     (req, res) => {
       res.status(201).end();
     }
   );
 
   app.post(
-    '/users/show',
+    '/contacts/show',
     urlencodedParser,
-    findUser,
+    findContact,
     (req, res) => {
       res.send(res.data);
     }
   );
 
   app.post(
-    '/users/index',
+    '/contacts/index',
     urlencodedParser,
-    getAllUsers,
+    getAllContacts,
     (req, res) => {
       res.send(res.data);
     }
