@@ -1,5 +1,6 @@
 import Contact from '../models/Contact';
 import Message from '../models/Message';
+import ChatOutbound from '../services/ChatOutbound';
 
 class ChatInbound {
   static extractDestinationFromCommand(command: string) {
@@ -15,7 +16,6 @@ class ChatInbound {
 
   static extractMessageBodyFromCommand(command) {
     const messageBody = command.split(/\s(.+)/)[1];
-
     return messageBody || null;
   }
 
@@ -71,7 +71,7 @@ class ChatInbound {
         validRequest: true,
         sendSms: true,
         messageType: 'chatInbound',
-        attachments: [{}],
+        attachments: [],
         chatResponse: {
           response_type: 'in_channel',
           text: '',
@@ -90,7 +90,7 @@ class ChatInbound {
         validRequest: false,
         sendSms: false,
         messageType: 'chatInbound',
-        attachments: [{}],
+        attachments: [],
         chatResponse: {
           response_type: 'ephemeral',
           text: `Error! Incorrect message for: \`${text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
@@ -107,6 +107,7 @@ class ChatInbound {
 
   static async renderSmsDir(req: any) {
     const { id } = req.organization;
+    const chatOutbound: ChatOutbound = new ChatOutbound(req);
     let displayMessage: string = '';
     const contacts: any = await Contact.all({ organizationId: id });
 
@@ -122,7 +123,7 @@ class ChatInbound {
       validRequest: true,
       sendSms: false,
       messageType: 'chatInbound',
-      attachments: [{}],
+      attachments: [],
       chatResponse: {
         response_type: 'ephemeral',
         text: displayMessage,
@@ -133,7 +134,8 @@ class ChatInbound {
       },
     };
 
-    return payload;
+    req.chasms = payload;
+    chatOutbound.sendMessage(req);
   }
 
   static async addToSmsDir(req: any) {
@@ -149,6 +151,7 @@ class ChatInbound {
       validRequest: true,
       sendSms: false,
       messageType: 'chatInbound',
+      attachments: [],
       chatResponse: {
         response_type: 'ephemeral',
         text: null, // displayMessage
@@ -170,6 +173,7 @@ class ChatInbound {
       validRequest: true,
       sendSms: false,
       messageType: 'chatInbound',
+      attachments: [],
       chatResponse: {
         response_type: 'ephemeral',
         text: `Error! \`${option}\` is not a valid prefix.`,
@@ -184,13 +188,14 @@ class ChatInbound {
   }
 
   static async processMessage(req: any) {
-    let payload: object = {};
+    let payload: any = {};
     const option: string = req.body.text.split(' ')[0];
 
     if (option[0] === '+') {
       payload = ChatInbound.sendSmsMessage(req);
     } else if (option === 'dir') {
-      payload = ChatInbound.renderSmsDir(req);
+      ChatInbound.renderSmsDir(req);
+      payload = { acknowledge: true, validRequest: true, sendSms: false, smsResponse: {} };
     } else if (option === 'add') {
       payload = ChatInbound.addToSmsDir(req);
     } else {

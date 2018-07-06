@@ -21,9 +21,6 @@ class SmsInbound {
       }
     }
 
-    console.log({ attachmentsCount });
-    console.log({ attachmentsLength: attachments.length });
-
     if (sender) {
       chatText = `+${sender.username} (sms): ${Body}`;
     } else {

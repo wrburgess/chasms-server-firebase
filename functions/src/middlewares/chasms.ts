@@ -13,12 +13,11 @@ const chatRelay = async (req, _, next) => {
       req.organization = organization;
 
       const smsOutbound: SmsOutbound = new SmsOutbound(req);
-      const payload = await ChatInbound.processMessage(req);
-      req.chasms = payload;
+      req.chasms = await ChatInbound.processMessage(req);
       const { validRequest, sendSms, smsResponse } = req.chasms;
 
       if (validRequest && sendSms) {
-        await smsOutbound.sendMessage(smsResponse)
+        smsOutbound.sendMessage(smsResponse)
         next();
       } else if (validRequest) {
         next();
@@ -37,10 +36,11 @@ const chatRelay = async (req, _, next) => {
 const smsRelay = async (req, _, next) => {
   try {
     const { AccountSid } = req.body;
-    req.organization = await Organization.findByVal({ field: 'twilioSid', val: AccountSid });
+    const organization = await Organization.findByVal({ field: 'twilioSid', val: AccountSid });
+    req.organization = organization;
     const chatOutbound: ChatOutbound = new ChatOutbound(req);
 
-    if (req.organization) {
+    if (organization) {
       req.chasms = await SmsInbound.processMessage(req);
       chatOutbound.sendMessage(req);
       next();

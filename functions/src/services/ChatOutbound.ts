@@ -8,6 +8,8 @@ class ChatOutbound {
   }
 
   async sendMessage(req: any) {
+    console.log({ reqChasms: req.chasms });
+
     try {
       const { attachments, chatResponse } = req.chasms;
       const axiosArray = [];
@@ -29,8 +31,6 @@ class ChatOutbound {
           axiosArray.push(axiosPromise);
         }
       } else {
-        console.log({ chatResponse });
-
         const axiosPromise = await axios({
           method: 'post',
           url: this.serviceUri,
