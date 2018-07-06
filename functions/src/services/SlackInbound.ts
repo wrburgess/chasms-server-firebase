@@ -1,8 +1,8 @@
 import Contact from '../models/Contact';
 import Message from '../models/Message';
-import ChatOutbound from '../services/ChatOutbound';
+import SlackOutbound from '../services/SlackOutbound';
 
-class ChatInbound {
+class SlackInbound {
   static extractDestinationFromCommand(command: string) {
     const commandSplit = command.split('+')[1];
     let destination = null;
@@ -33,7 +33,7 @@ class ChatInbound {
     };
 
     const phoneNumberRegex: RegExp = RegExp('^\\d{10}$'); // 9876543210
-    const recipientDestination: string = ChatInbound.extractDestinationFromCommand(text);
+    const recipientDestination: string = SlackInbound.extractDestinationFromCommand(text);
 
     // Determine if Chat Sender used valid phone number
     if (phoneNumberRegex.test(recipientDestination)) {
@@ -54,7 +54,7 @@ class ChatInbound {
       });
     }
 
-    const smsMessageBody: string = ChatInbound.extractMessageBodyFromCommand(text);
+    const smsMessageBody: string = SlackInbound.extractMessageBodyFromCommand(text);
 
     // Determine if SMS Recipiet and Message are valid
     if (recipient && smsMessageBody) {
@@ -70,7 +70,7 @@ class ChatInbound {
         status: 200,
         validRequest: true,
         sendSms: true,
-        messageType: 'chatInbound',
+        messageType: 'slackInbound',
         attachments: [],
         chatResponse: {
           response_type: 'in_channel',
@@ -89,7 +89,7 @@ class ChatInbound {
         status: 200,
         validRequest: false,
         sendSms: false,
-        messageType: 'chatInbound',
+        messageType: 'slackInbound',
         attachments: [],
         chatResponse: {
           response_type: 'ephemeral',
@@ -107,7 +107,7 @@ class ChatInbound {
 
   static async renderSmsDir(req: any) {
     const { id } = req.organization;
-    const chatOutbound: ChatOutbound = new ChatOutbound(req);
+    const slackOutbound: SlackOutbound = new SlackOutbound(req);
     let displayMessage: string = '';
     const contacts: any = await Contact.all({ organizationId: id });
 
@@ -122,7 +122,7 @@ class ChatInbound {
       status: 200,
       validRequest: true,
       sendSms: false,
-      messageType: 'chatInbound',
+      messageType: 'slackInbound',
       attachments: [],
       chatResponse: {
         response_type: 'ephemeral',
@@ -135,7 +135,7 @@ class ChatInbound {
     };
 
     req.chasms = payload;
-    chatOutbound.sendMessage(req);
+    slackOutbound.sendMessage(req);
   }
 
   static async addToSmsDir(req: any) {
@@ -150,7 +150,7 @@ class ChatInbound {
       status: 200,
       validRequest: true,
       sendSms: false,
-      messageType: 'chatInbound',
+      messageType: 'slackInbound',
       attachments: [],
       chatResponse: {
         response_type: 'ephemeral',
@@ -172,7 +172,7 @@ class ChatInbound {
       status: 200,
       validRequest: true,
       sendSms: false,
-      messageType: 'chatInbound',
+      messageType: 'slackInbound',
       attachments: [],
       chatResponse: {
         response_type: 'ephemeral',
@@ -192,18 +192,18 @@ class ChatInbound {
     const option: string = req.body.text.split(' ')[0];
 
     if (option[0] === '+') {
-      payload = ChatInbound.sendSmsMessage(req);
+      payload = SlackInbound.sendSmsMessage(req);
     } else if (option === 'dir') {
-      ChatInbound.renderSmsDir(req);
+      SlackInbound.renderSmsDir(req);
       payload = { acknowledge: true, validRequest: true, sendSms: false, smsResponse: {} };
     } else if (option === 'add') {
-      payload = ChatInbound.addToSmsDir(req);
+      payload = SlackInbound.addToSmsDir(req);
     } else {
-      payload = ChatInbound.renderPrefixError(req, option);
+      payload = SlackInbound.renderPrefixError(req, option);
     }
 
     return payload;
   }
 }
 
-export default ChatInbound;
+export default SlackInbound;

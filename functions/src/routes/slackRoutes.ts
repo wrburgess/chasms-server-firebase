@@ -1,10 +1,10 @@
-import { chatRelay } from '../middlewares/chasms';
+import { slackRelay } from '../middlewares/chasms';
 
 module.exports = (app, urlencodedParser) => {
   app.post(
-    '/chat',
+    '/slack',
     urlencodedParser,
-    chatRelay,
+    slackRelay,
     (req, res) => {
       if (req.chasms.acknowledge) {
         res.end();
