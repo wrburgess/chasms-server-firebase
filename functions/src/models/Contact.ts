@@ -4,27 +4,12 @@ import { ORGANIZATIONS, CONTACTS } from '../constants/models';
 class Contact {
   static async create(attrs) {
     try {
-      const {
-        chatUsername,
-        email,
-        firstName,
-        lastName,
-        organizationId,
-        smsNumber,
-        username,
-      } = attrs;
-
-      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(attrs.organizationId).collection(CONTACTS);
 
       const docRef = await collectionRef.add({
-        chatUsername,
+        ...attrs,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        email,
-        firstName,
-        lastName,
-        smsNumber,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        username,
       });
 
       return docRef;

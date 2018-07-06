@@ -6,21 +6,23 @@ class SmsInbound {
     const { id } = req.organization;
     const { Body, From, NumMedia } = req.body;
 
-    const smsNumber = From.substring(2); // remove leading +1
+    const smsNumber: string = From.substring(2); // remove leading +1
     const sender: any = await Contact.findByVal({ organizationId: id, field: 'smsNumber', val: smsNumber });
-    const numAttachments: number = Number(NumMedia);
-    const loopCount: number = numAttachments || 1;
-    const attachments: Array<any> = [{}];
+    const attachmentsCount: number = Number(NumMedia);
+    const attachments: Array<any> = [];
     let chatText: string = '';
 
-    for (let i = 1; i <= loopCount; i += 1) {
-      if (i <= numAttachments) {
-        attachments[i] = [{
+    if (attachmentsCount > 0) {
+      for (let i = 0; i < attachmentsCount; i += 1) {
+        attachments.push({
           fallback: 'Error: Message can not render',
-          image_url: eval(`req.body.MediaUrl${i - 1}`),
-        }];
+          image_url: req.body[`MediaUrl${i}`],
+        });
       }
     }
+
+    console.log({ attachmentsCount });
+    console.log({ attachmentsLength: attachments.length });
 
     if (sender) {
       chatText = `+${sender.username} (sms): ${Body}`;

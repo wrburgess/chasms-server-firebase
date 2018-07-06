@@ -11,14 +11,27 @@ class ChatOutbound {
     try {
       const { attachments, chatResponse } = req.chasms;
       const axiosArray = [];
-      const loopCount = attachments.length || 1;
 
-      for (let i = 0; i < loopCount; i += 1) {
-        if (i > 0 && attachments[i]) {
-          chatResponse.attachments = attachments[i];
+      if (attachments.length > 0) {
+        chatResponse.attachments = [];
+
+        for (const attachment of attachments) {
+          if (attachment) {
+            chatResponse.attachments.push(attachment);
+          }
+
+          const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
+            method: 'post',
+            url: this.serviceUri,
+            data: chatResponse,
+          });
+
+          axiosArray.push(axiosPromise);
         }
+      } else {
+        console.log({ chatResponse });
 
-        const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
+        const axiosPromise = await axios({
           method: 'post',
           url: this.serviceUri,
           data: chatResponse,

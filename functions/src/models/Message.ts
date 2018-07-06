@@ -4,27 +4,10 @@ import { ORGANIZATIONS, MESSAGES } from '../constants/models';
 class Message {
   static async create(attrs) {
     try {
-      const {
-        organizationId,
-        status,
-        validRequest,
-        sendSms,
-        messageType,
-        attachments,
-        chatResponse,
-        smsResponse,
-      } = attrs;
-
-      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(MESSAGES);
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(attrs.organizationId).collection(MESSAGES);
 
       const ref = await collectionRef.add({
-        status,
-        validRequest,
-        sendSms,
-        messageType,
-        attachments,
-        chatResponse,
-        smsResponse,
+        ...attrs,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
@@ -40,9 +23,8 @@ class Message {
     const { organizationId } = attrs;
 
     try {
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = docRef.collection(MESSAGES).orderBy('createdAt');
-      const querySnapshot = await query.get();
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(MESSAGES);
+      const querySnapshot = await collectionRef.orderBy('createdAt').get();
 
       if (!querySnapshot.empty) {
         const data = querySnapshot.docs.map((docSnapshot) => {
@@ -64,9 +46,8 @@ class Message {
     const { organizationId, field, val } = attrs;
 
     try {
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = docRef.collection(MESSAGES).where(field, '==', val).limit(1);
-      const querySnapshot = await query.get();
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(MESSAGES);
+      const querySnapshot = await collectionRef.where(field, '==', val).limit(1).get();
 
       if (!querySnapshot.empty) {
         const data = querySnapshot.docs.map((docSnapshot) => {
@@ -88,10 +69,8 @@ class Message {
     const { organizationId, field, val } = attrs;
 
     try {
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const collectionRef = docRef.collection(MESSAGES);
-      const query = collectionRef.where(field, '==', val);
-      const querySnapshot = await query.get();
+      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(MESSAGES);
+      const querySnapshot = await collectionRef.where(field, '==', val).get();
 
       return querySnapshot;
     } catch (err) {

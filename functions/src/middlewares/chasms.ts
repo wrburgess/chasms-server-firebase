@@ -37,14 +37,12 @@ const chatRelay = async (req, _, next) => {
 const smsRelay = async (req, _, next) => {
   try {
     const { AccountSid } = req.body;
-    const organization = await Organization.findByVal({ field: 'twilioSid', val: AccountSid });
-    req.organization = organization;
+    req.organization = await Organization.findByVal({ field: 'twilioSid', val: AccountSid });
     const chatOutbound: ChatOutbound = new ChatOutbound(req);
 
-    if (organization) {
-      const payload = await SmsInbound.processMessage(req);
-      req.chasms = payload;
-      await chatOutbound.sendMessage(req);
+    if (req.organization) {
+      req.chasms = await SmsInbound.processMessage(req);
+      chatOutbound.sendMessage(req);
       next();
     } else {
       req.chasms = { status: 403 };
