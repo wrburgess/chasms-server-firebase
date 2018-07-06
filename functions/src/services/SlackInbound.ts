@@ -135,7 +135,7 @@ class SlackInbound {
     };
 
     req.chasms = payload;
-    slackOutbound.sendMessage(req);
+    slackOutbound.sendEphemeralMessage(req);
   }
 
   static async addToSmsDir(req: any) {

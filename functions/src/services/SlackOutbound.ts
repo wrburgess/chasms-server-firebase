@@ -8,8 +8,6 @@ class SlackOutbound {
   }
 
   async sendMessage(req: any) {
-    console.log({ reqChasms: req.chasms });
-
     try {
       const { attachments, chatResponse } = req.chasms;
       const axiosArray = [];
@@ -46,42 +44,28 @@ class SlackOutbound {
     }
   }
 
-    async sendMessage(req: any) {
-    console.log({ reqChasms: req.chasms });
+  async sendEphemeralMessage(req: any) {
+    const chatUrl = 'https://slack.com/api/chat.postEphemeral';
 
     try {
-      const { attachments, chatResponse } = req.chasms;
-      const axiosArray = [];
+      const token = 'xoxb-331363660965-lsoZmSWg0QzTolGca34bGTJl';
+      const config = {
+        headers: { 'Authorization': 'Bearer ' + token }
+      };
 
-      if (attachments.length > 0) {
-        chatResponse.attachments = [];
-
-        for (const attachment of attachments) {
-          if (attachment) {
-            chatResponse.attachments.push(attachment);
-          }
-
-          const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
-            method: 'post',
-            url: this.serviceUri,
-            data: chatResponse,
-          });
-
-          axiosArray.push(axiosPromise);
-        }
-      } else {
-        const axiosPromise = await axios({
-          method: 'post',
-          url: this.serviceUri,
-          data: chatResponse,
-        });
-
-        axiosArray.push(axiosPromise);
-      }
-
-      await axios.all(axiosArray);
+      const axiosResponse = await axios.post(
+        chatUrl,
+        {
+          channel: req.body.channel_id,
+          text: req.chasms.chatResponse.text,
+          user: req.body.user_id,
+          as_user: true,
+          link_names: true,
+        },
+        config,
+      );
     } catch (err) {
-      console.error('SlackOutbound > sendMessage: ', err);
+      console.error('SlackOutbound > sendEphemeralMessage: ', err);
     }
   }
 }
