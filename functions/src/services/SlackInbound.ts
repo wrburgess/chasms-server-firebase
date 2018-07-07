@@ -82,7 +82,9 @@ class SlackInbound {
         },
       };
 
+      req.chasms = payload;
       Message.create(payload);
+      SlackOutbound.sendPublicMessage(req);
     } else {
       payload = {
         organizationId: id,
@@ -100,14 +102,14 @@ class SlackInbound {
           body: null,
         },
       };
-    }
 
-    return payload;
+      req.chasms = payload;
+      SlackOutbound.sendEphemeralMessage(req);
+    }
   }
 
   static async renderSmsDir(req: any) {
     const { id } = req.organization;
-    const slackOutbound: SlackOutbound = new SlackOutbound(req);
     let displayMessage: string = '';
     const contacts: any = await Contact.all({ organizationId: id });
 
@@ -135,7 +137,7 @@ class SlackInbound {
     };
 
     req.chasms = payload;
-    slackOutbound.sendEphemeralMessage(req);
+    SlackOutbound.sendEphemeralMessage(req);
   }
 
   static async addToSmsDir(req: any) {
@@ -192,7 +194,8 @@ class SlackInbound {
     const option: string = req.body.text.split(' ')[0];
 
     if (option[0] === '+') {
-      payload = SlackInbound.sendSmsMessage(req);
+      SlackInbound.sendSmsMessage(req);
+      payload = { acknowledge: true, validRequest: true, sendSms: false, smsResponse: {} };
     } else if (option === 'dir') {
       SlackInbound.renderSmsDir(req);
       payload = { acknowledge: true, validRequest: true, sendSms: false, smsResponse: {} };

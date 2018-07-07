@@ -38,11 +38,10 @@ const smsRelay = async (req, _, next) => {
     const { AccountSid } = req.body;
     const organization = await Organization.findByVal({ field: 'twilioSid', val: AccountSid });
     req.organization = organization;
-    const slackOutbound: SlackOutbound = new SlackOutbound(req);
 
     if (organization) {
       req.chasms = await SmsInbound.processMessage(req);
-      slackOutbound.sendMessage(req);
+      SlackOutbound.sendPublicMessage(req);
       next();
     } else {
       req.chasms = { status: 403 };

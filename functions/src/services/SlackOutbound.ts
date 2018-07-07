@@ -1,14 +1,11 @@
 import axios from 'axios';
 
+import { SLACK_EPHEMERAL_MESSAGE_URI, SLACK_PUBLIC_MESSAGE_URI } from '../constants/config';
+
 class SlackOutbound {
-  serviceUri: string = null;
-
-  constructor(req) {
-    this.serviceUri = req.organization.slackAppWebhook;
-  }
-
-  async sendMessage(req: any) {
+  static async sendWebhookMessage(req: any) {
     try {
+      const { slackAppWebhook } = req.organization;
       const { attachments, chatResponse } = req.chasms;
       const axiosArray = [];
 
@@ -21,18 +18,18 @@ class SlackOutbound {
           }
 
           const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
-            method: 'post',
-            url: this.serviceUri,
             data: chatResponse,
+            method: 'post',
+            url: slackAppWebhook,
           });
 
           axiosArray.push(axiosPromise);
         }
       } else {
         const axiosPromise = await axios({
-          method: 'post',
-          url: this.serviceUri,
           data: chatResponse,
+          method: 'post',
+          url: slackAppWebhook,
         });
 
         axiosArray.push(axiosPromise);
@@ -40,30 +37,74 @@ class SlackOutbound {
 
       await axios.all(axiosArray);
     } catch (err) {
-      console.error('SlackOutbound > sendMessage: ', err);
+      console.error('SlackOutbound > sendPublicMessage: ', err);
     }
   }
 
-  async sendEphemeralMessage(req: any) {
-    const chatUrl = 'https://slack.com/api/chat.postEphemeral';
-
+  static async sendPublicMessage(req: any) {
     try {
-      const token = 'xoxb-331363660965-lsoZmSWg0QzTolGca34bGTJl';
+      const { slackBotToken } = req.organization;
+      const { attachments, chatResponse } = req.chasms;
       const config = {
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { Authorization: `Bearer ${slackBotToken}` }
+      };
+      const axiosArray = [];
+
+      if (attachments.length > 0) {
+        chatResponse.attachments = [];
+
+        for (const attachment of attachments) {
+          if (attachment) {
+            chatResponse.attachments.push(attachment);
+          }
+
+          const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
+            data: chatResponse,
+            headers: config,
+            method: 'post',
+            url: SLACK_PUBLIC_MESSAGE_URI,
+          });
+
+          axiosArray.push(axiosPromise);
+        }
+      } else {
+        const axiosPromise = await axios({
+          data: chatResponse,
+          headers: config,
+          method: 'post',
+          url: SLACK_PUBLIC_MESSAGE_URI,
+        });
+
+        axiosArray.push(axiosPromise);
+      }
+
+      axios.all(axiosArray);
+    } catch (err) {
+      console.error('SlackOutbound > sendPublicMessage: ', err);
+    }
+  }
+
+  static async sendEphemeralMessage(req: any) {
+    try {
+      const { slackBotToken } = req.organization;
+      const { channel_id, user_id } = req.body;
+      const { text } = req.chasms.chatResponse;
+      const chatUrl = SLACK_EPHEMERAL_MESSAGE_URI;
+      const config = {
+        headers: { Authorization: `Bearer ${slackBotToken}` }
       };
 
-      const axiosResponse = await axios.post(
+      axios.post(
         chatUrl,
         {
-          channel: req.body.channel_id,
-          text: req.chasms.chatResponse.text,
-          user: req.body.user_id,
           as_user: true,
+          channel: channel_id,
           link_names: true,
+          text,
+          user: user_id,
         },
         config,
-      );
+      )
     } catch (err) {
       console.error('SlackOutbound > sendEphemeralMessage: ', err);
     }
