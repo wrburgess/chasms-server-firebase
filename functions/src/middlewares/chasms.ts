@@ -5,8 +5,6 @@ import Organization from '../models/Organization';
 
 const slackRelay = async (req, _, next) => {
   try {
-
-    console.log({ reqBody: req.body });
     const { channel_id } = req.body;
     const organization = await Organization.findByVal({ field: 'slackChannelId', val: channel_id });
 

@@ -17,6 +17,7 @@ class SmsInbound {
         attachments.push({
           fallback: 'Error: Message can not render',
           image_url: req.body[`MediaUrl${i}`],
+          color: '#3AA3E3',
         });
       }
     }

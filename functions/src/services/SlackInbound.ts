@@ -115,6 +115,7 @@ class SlackInbound {
   static async renderSmsDir(req: any) {
     const { id } = req.organization;
     let displayMessage: string = '';
+    const attachments: Array<any> = [];
     const contacts: any = await Contact.all({ organizationId: id });
 
     contacts.forEach((listItem) => {
@@ -123,16 +124,35 @@ class SlackInbound {
         +${listItem.username}\n`;
     });
 
+    const table: any = {
+      fallback: 'Table of Contacts',
+      fields: [
+        {
+          title: 'Contact',
+          value: 'Burgess, Randy\nVanDemark Jr, Don\nVanDemark Sr, Don',
+          short: true
+        },
+        {
+          title: 'Commands',
+          value: '+rb, +7735516808\n+donjr, +1234567890\n+donsr, +1234567890',
+          short: true
+        }
+      ],
+      color: '#F35A00',
+    }
+
+    attachments.push(table);
+
     const payload: object = {
       organizationId: id,
       status: 200,
       validRequest: true,
       sendSms: false,
       messageType: 'slackInbound',
-      attachments: [],
+      attachments,
       chatResponse: {
         response_type: 'ephemeral',
-        text: displayMessage,
+        text: 'Contact Directory',
       },
       smsResponse: {
         smsNumber: null,

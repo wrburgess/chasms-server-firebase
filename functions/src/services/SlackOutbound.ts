@@ -56,16 +56,18 @@ class SlackOutbound {
       const config = {
         headers: { Authorization: `Bearer ${slackBotToken}` }
       };
+      const payload = {
+        attachments: req.chasms.attachments,
+        as_user: true,
+        channel: channel_id,
+        link_names: true,
+        text,
+        user: user_id
+      };
 
       axios.post(
         SLACK_EPHEMERAL_MESSAGE_URI,
-        {
-          as_user: true,
-          channel: channel_id,
-          link_names: true,
-          text,
-          user: user_id,
-        },
+        payload,
         config,
       )
     } catch (err) {
