@@ -1,33 +1,26 @@
 import SlackInbound from '../services/SlackInbound';
 import SlackOutbound from '../services/SlackOutbound';
 import SmsInbound from '../services/SmsInbound';
-import SmsOutbound from '../services/SmsOutbound';
 import Organization from '../models/Organization';
 
 const slackRelay = async (req, _, next) => {
   try {
+
+    console.log({ reqBody: req.body });
     const { channel_id } = req.body;
     const organization = await Organization.findByVal({ field: 'slackChannelId', val: channel_id });
 
     if (organization) {
       req.organization = organization;
-
-      const smsOutbound: SmsOutbound = new SmsOutbound(req);
-      req.chasms = await SlackInbound.processMessage(req);
-      const { validRequest, sendSms, smsResponse } = req.chasms;
-
-      if (validRequest && sendSms) {
-        smsOutbound.sendMessage(smsResponse)
-        next();
-      } else if (validRequest) {
-        next();
-      }
+      SlackInbound.processMessage(req);
+      req.chasms = { acknowledge: true };
+      next();
     } else {
       req.chasms = { status: 403 };
       next();
     }
   } catch (err) {
-    req.chasms = { status: 403 };
+    req.chasms = { status: 500 };
     console.error('chasms > slackRelay: ', err);
     next();
   };
@@ -37,9 +30,9 @@ const smsRelay = async (req, _, next) => {
   try {
     const { AccountSid } = req.body;
     const organization = await Organization.findByVal({ field: 'twilioSid', val: AccountSid });
-    req.organization = organization;
 
     if (organization) {
+      req.organization = organization;
       req.chasms = await SmsInbound.processMessage(req);
       SlackOutbound.sendPublicMessage(req);
       next();

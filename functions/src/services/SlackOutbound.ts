@@ -3,82 +3,46 @@ import axios from 'axios';
 import { SLACK_EPHEMERAL_MESSAGE_URI, SLACK_PUBLIC_MESSAGE_URI } from '../constants/config';
 
 class SlackOutbound {
-  static async sendWebhookMessage(req: any) {
+  static async sendDelayedReply(req: any, responseType: String = 'in_channel') {
     try {
-      const { slackAppWebhook } = req.organization;
-      const { attachments, chatResponse } = req.chasms;
-      const axiosArray = [];
+      const { slackBotToken } = req.organization;
+      const { chatResponse } = req.chasms;
+      const config = {
+        headers: { Authorization: `Bearer ${slackBotToken}` }
+      };
 
-      if (attachments.length > 0) {
-        chatResponse.attachments = [];
-
-        for (const attachment of attachments) {
-          if (attachment) {
-            chatResponse.attachments.push(attachment);
-          }
-
-          const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
-            data: chatResponse,
-            method: 'post',
-            url: slackAppWebhook,
-          });
-
-          axiosArray.push(axiosPromise);
-        }
-      } else {
-        const axiosPromise = await axios({
-          data: chatResponse,
-          method: 'post',
-          url: slackAppWebhook,
-        });
-
-        axiosArray.push(axiosPromise);
-      }
-
-      await axios.all(axiosArray);
+      axios.post(
+        req.body.response_url,
+        {
+          response_type: responseType,
+          text: chatResponse.text
+        },
+        config,
+      )
     } catch (err) {
-      console.error('SlackOutbound > sendPublicMessage: ', err);
+      console.error('SlackOutbound > sendDelayedReply: ', err);
     }
   }
 
   static async sendPublicMessage(req: any) {
     try {
-      const { slackBotToken } = req.organization;
+      const { slackBotToken, slackChannelId } = req.organization;
       const { attachments, chatResponse } = req.chasms;
       const config = {
         headers: { Authorization: `Bearer ${slackBotToken}` }
       };
-      const axiosArray = [];
 
-      if (attachments.length > 0) {
-        chatResponse.attachments = [];
-
-        for (const attachment of attachments) {
-          if (attachment) {
-            chatResponse.attachments.push(attachment);
-          }
-
-          const axiosPromise = await axios({ // eslint-disable-line no-await-in-loop
-            data: chatResponse,
-            headers: config,
-            method: 'post',
-            url: SLACK_PUBLIC_MESSAGE_URI,
-          });
-
-          axiosArray.push(axiosPromise);
-        }
-      } else {
-        const axiosPromise = await axios({
-          data: chatResponse,
-          headers: config,
-          method: 'post',
-          url: SLACK_PUBLIC_MESSAGE_URI,
-        });
-
-        axiosArray.push(axiosPromise);
-      }
-
-      axios.all(axiosArray);
+      axios.post(
+        SLACK_PUBLIC_MESSAGE_URI,
+        {
+          as_user: false,
+          channel: slackChannelId,
+          link_names: true,
+          text: chatResponse.text,
+          attachments,
+        },
+        config,
+      )
     } catch (err) {
       console.error('SlackOutbound > sendPublicMessage: ', err);
     }
@@ -89,13 +53,12 @@ class SlackOutbound {
       const { slackBotToken } = req.organization;
       const { channel_id, user_id } = req.body;
       const { text } = req.chasms.chatResponse;
-      const chatUrl = SLACK_EPHEMERAL_MESSAGE_URI;
       const config = {
         headers: { Authorization: `Bearer ${slackBotToken}` }
       };
 
       axios.post(
-        chatUrl,
+        SLACK_EPHEMERAL_MESSAGE_URI,
         {
           as_user: true,
           channel: channel_id,

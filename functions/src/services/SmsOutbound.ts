@@ -1,28 +1,20 @@
 import * as Twilio from 'twilio';
 
 class SmsOutbound {
-  service: Twilio = null;
-  serviceNumber: string = null;
-
-  constructor(req: any) {
-    const { twilioSid, twilioAuthToken, twilioAccountPhoneNumber } = req.organization;
-
-    this.service = new Twilio(twilioSid, twilioAuthToken);
-    this.serviceNumber = twilioAccountPhoneNumber;
-  }
-
-  async sendMessage(req: any) {
-    const { body, smsNumber } = req;
-    const message = {
-      from: this.serviceNumber,
-      to: `1${smsNumber}`,
-      body: body,
-    };
-
+  static async sendMessage(req: any) {
     try {
-      await this.service.messages.create(message);
+      const { twilioSid, twilioAuthToken, twilioAccountPhoneNumber } = req.organization;
+      const twilio = new Twilio(twilioSid, twilioAuthToken);
+      const { body, smsNumber } = req.chasms.smsResponse;
+      const message = {
+        from: twilioAccountPhoneNumber,
+        to: `1${smsNumber}`,
+        body: body,
+      };
+
+      await twilio.messages.create(message);
     } catch (err) {
-      throw err;
+      console.error('SmsOutbound > sendMessage:', err);
     }
   }
 }

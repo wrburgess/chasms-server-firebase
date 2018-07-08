@@ -4,6 +4,8 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as express from 'express';
 import * as morgan from 'morgan';
+import * as sourceMapSupport from 'source-map-support';
+sourceMapSupport.install()
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 

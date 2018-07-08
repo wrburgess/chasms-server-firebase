@@ -7,7 +7,7 @@ module.exports = (app, urlencodedParser) => {
     slackRelay,
     (req, res) => {
       if (req.chasms.acknowledge) {
-        res.end();
+        res.json({ response_type: "in_channel" });
       } else if (req.chasms.status < 400) {
         res.json(req.chasms.chatResponse);
       } else {

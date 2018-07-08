@@ -1,6 +1,7 @@
 import Contact from '../models/Contact';
 import Message from '../models/Message';
 import SlackOutbound from '../services/SlackOutbound';
+import SmsOutbound from '../services/SmsOutbound';
 
 class SlackInbound {
   static extractDestinationFromCommand(command: string) {
@@ -20,91 +21,94 @@ class SlackInbound {
   }
 
   static async sendSmsMessage(req: any) {
-    const { id } = req.organization;
-    const { user_name, text } = req.body;
-    let payload: object = {};
-    let recipient: any = {
-      chatUsername: null,
-      email: null,
-      firstName: null,
-      lastName: null,
-      smsNumber: null,
-      username: null,
-    };
-
-    const phoneNumberRegex: RegExp = RegExp('^\\d{10}$'); // 9876543210
-    const recipientDestination: string = SlackInbound.extractDestinationFromCommand(text);
-
-    // Determine if Chat Sender used valid phone number
-    if (phoneNumberRegex.test(recipientDestination)) {
-      recipient = {
-        chatUsername: '',
-        email: '',
-        firstName: recipientDestination,
-        lastName: '',
-        smsNumber: recipientDestination,
-        username: '',
-      };
-    } else {
-      // Or retrieve SMS Recipient by their username
-      recipient = await Contact.findByVal({
-        organizationId: id,
-        field: 'username',
-        val: recipientDestination.toLowerCase()
-      });
-    }
-
-    const smsMessageBody: string = SlackInbound.extractMessageBodyFromCommand(text);
-
-    // Determine if SMS Recipiet and Message are valid
-    if (recipient && smsMessageBody) {
-      // Retrieve Chat Sender by chat username
-      const sender: any = await Contact.findByVal({
-        organizationId: id,
-        field: 'chatUsername',
-        val: user_name,
-      });
-
-      payload = {
-        organizationId: id,
-        status: 200,
-        validRequest: true,
-        sendSms: true,
-        messageType: 'slackInbound',
-        attachments: [],
-        chatResponse: {
-          response_type: 'in_channel',
-          text: '',
-        },
-        smsResponse: {
-          smsNumber: recipient.smsNumber,
-          body: `${sender.chatUsername}: ${smsMessageBody}`,
-        },
+    try {
+      let payload: any = {};
+      const { id } = req.organization;
+      const { user_name, text } = req.body;
+      let recipient: any = {
+        chatUsername: null,
+        email: null,
+        firstName: null,
+        lastName: null,
+        smsNumber: null,
+        username: null,
       };
 
-      req.chasms = payload;
-      Message.create(payload);
-      SlackOutbound.sendPublicMessage(req);
-    } else {
-      payload = {
-        organizationId: id,
-        status: 200,
-        validRequest: false,
-        sendSms: false,
-        messageType: 'slackInbound',
-        attachments: [],
-        chatResponse: {
-          response_type: 'ephemeral',
-          text: `Error! Incorrect message for: \`${text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
-        },
-        smsResponse: {
-          smsNumber: null,
-          body: null,
-        },
-      };
+      const phoneNumberRegex: RegExp = RegExp('^\\d{10}$'); // 9876543210
+      const recipientDestination: string = SlackInbound.extractDestinationFromCommand(text);
 
-      req.chasms = payload;
-      SlackOutbound.sendEphemeralMessage(req);
+      // Determine if Chat Sender used valid phone number
+      if (phoneNumberRegex.test(recipientDestination)) {
+        recipient = {
+          chatUsername: '',
+          email: '',
+          firstName: recipientDestination,
+          lastName: '',
+          smsNumber: recipientDestination,
+          username: '',
+        };
+      } else {
+        // Or retrieve SMS Recipient by their username
+        recipient = await Contact.findByVal({
+          organizationId: id,
+          field: 'username',
+          val: recipientDestination.toLowerCase()
+        });
+      }
+
+      const smsMessageBody: string = SlackInbound.extractMessageBodyFromCommand(text);
+
+      // Determine if SMS Recipiet and Message are valid
+      if (recipient && smsMessageBody) {
+        // Retrieve Chat Sender by chat username
+        const sender: any = await Contact.findByVal({
+          organizationId: id,
+          field: 'chatUsername',
+          val: user_name,
+        });
+
+        payload = {
+          organizationId: id,
+          status: 200,
+          validRequest: true,
+          sendSms: true,
+          messageType: 'slackInbound',
+          attachments: [],
+          chatResponse: {
+            response_type: 'none',
+            text: `${sender.chatUsername}: ${smsMessageBody}`,
+          },
+          smsResponse: {
+            smsNumber: recipient.smsNumber,
+            body: `${sender.chatUsername}: ${smsMessageBody}`,
+          },
+        };
+
+        req.chasms = payload;
+        Message.create(req.chasms);
+        SmsOutbound.sendMessage(req);
+      } else {
+        payload = {
+          organizationId: id,
+          status: 200,
+          validRequest: false,
+          sendSms: false,
+          messageType: 'slackInbound',
+          attachments: [],
+          chatResponse: {
+            response_type: 'ephemeral',
+            text: `Error! Incorrect message for: \`${text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
+          },
+          smsResponse: {
+            smsNumber: null,
+            body: null,
+          },
+        };
+      }
+
+      return payload;
+    } catch (err) {
+      console.error('SlackInbound > sendSmsMessage:', err);
     }
   }
 
@@ -136,8 +140,7 @@ class SlackInbound {
       },
     };
 
-    req.chasms = payload;
-    SlackOutbound.sendEphemeralMessage(req);
+    return payload;
   }
 
   static async addToSmsDir(req: any) {
@@ -156,7 +159,7 @@ class SlackInbound {
       attachments: [],
       chatResponse: {
         response_type: 'ephemeral',
-        text: null, // displayMessage
+        text: 'New contact added',
       },
       smsResponse: {
         smsNumber: null,
@@ -190,22 +193,23 @@ class SlackInbound {
   }
 
   static async processMessage(req: any) {
-    let payload: any = {};
     const option: string = req.body.text.split(' ')[0];
 
     if (option[0] === '+') {
-      SlackInbound.sendSmsMessage(req);
-      payload = { acknowledge: true, validRequest: true, sendSms: false, smsResponse: {} };
+      req.chasms = await SlackInbound.sendSmsMessage(req);
     } else if (option === 'dir') {
-      SlackInbound.renderSmsDir(req);
-      payload = { acknowledge: true, validRequest: true, sendSms: false, smsResponse: {} };
+      req.chasms = await SlackInbound.renderSmsDir(req);
     } else if (option === 'add') {
-      payload = SlackInbound.addToSmsDir(req);
+      req.chasms = await SlackInbound.addToSmsDir(req);
     } else {
-      payload = SlackInbound.renderPrefixError(req, option);
+      req.chasms = await SlackInbound.renderPrefixError(req, option);
     }
 
-    return payload;
+    if (req.chasms.chatResponse.response_type === 'ephemeral') {
+      SlackOutbound.sendEphemeralMessage(req);
+    } else if (req.chasms.chatResponse.response_type === 'in_channel') {
+      SlackOutbound.sendPublicMessage(req);
+    }
   }
 }
 

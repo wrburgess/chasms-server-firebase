@@ -6,6 +6,7 @@ class Organization {
     const {
       abbreviation,
       name,
+      slackBotToken,
       slackAppWebhook,
       slackChannelId,
       slackTeamId,
@@ -18,6 +19,7 @@ class Organization {
     collectionRef.add({
       abbreviation,
       name,
+      slackBotToken,
       slackAppWebhook,
       slackChannelId,
       slackTeamId,
