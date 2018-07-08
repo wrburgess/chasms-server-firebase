@@ -28,6 +28,28 @@
 * If you want a little security with your server, use this `ngrok http -subdomain=allaboardapps -auth=username:password 8080` and visitors will need to enter your choice of the username/password combo
 * Once both ngrok and express are running locally, you can test the servers via [https://allaboardapps.ngrok.io](https://allaboardapps.ngrok.io). You can point services, such as Twilio webhooks, to routes on this domain for local testing.
 
+## Payloads
+
+### Slack Inbound from Slash Command
+
+```js
+{
+  reqBody:{
+    token: 'SDRmZxxxxxxxJAFuE5Dm',
+    team_id: 'T0xxxxxxE1',
+    team_domain: 'allaboardapps',
+    channel_id: 'G9xxxxxH8',
+    channel_name: 'privategroup',
+    user_id: 'U0xxxxxJ3',
+    user_name: 'wrburgess',
+    command: '/sms',
+    text: 'dir',
+    response_url: 'https://hooks.slack.com/commands/T0xxxxxE1/3939xxxxxxx24/5sxxxxxxxxxxxj0FEeGjs',
+    trigger_id: '393xxxxxx4273.1552xxxxxx77.7ca707exxxxxx58c478bdf1xxxxx86'
+  }
+}
+```
+
 ## Schemas
 
 ### Organization
@@ -37,12 +59,13 @@
     abbreviation: String,
     createdAt: Date,
     name: String,
-    slack_app_webhook: String,          // https://hooks.slack.com/services/T0FFFXXX/B8MME748Y/S3TcLI2HXXXXXXXXXXXXXXX
-    slack_channel_id: String,           // G9RMXXXXX
-    slack_team_id: String,              // T0FFFXXX
-    twilio_account_phone_number: String // +1234567890
-    twilio_auth_token: String,          // 19a7a80933df7b088897XXXXXXXXXXXXX
-    twilio_sid: String,                 // AC777f98cc9160b995bbbXXXXXXXXXXXXXX
+    slackBotToken: String,            // xoxb-33xxxxx965-lsoxxxxxxxxxxxxxxxxxbGTJl
+    slackAppWebhook: String,          // https://hooks.slack.com/services/T0FFFXXX/B8MME748Y/S3TcLI2HXXXXXXXXXXXXXXX
+    slackChannelId: String,           // G9RMXXXXX
+    slackTeamId: String,              // T0FFFXXX
+    twilioAccountPhoneNumber: String  // +1234567890
+    twilioAuthToken: String,          // 19a7a80933df7b088897XXXXXXXXXXXXX
+    twilioSid: String,                // AC777f98cc9160b995bbbXXXXXXXXXXXXXX
     updatedAt: Date,
   }
 ```
