@@ -88,16 +88,42 @@ class SlackInbound {
         Message.create(req.chasms);
         SmsOutbound.sendMessage(req);
       } else {
+        const attachments: Array<any> = [
+          {
+            fields: [
+              {
+                title: `Incorrect contact for command: \`/sms ${text}\`.`,
+                value: `Please include a valid \`+username\` for SMS messaging.`,
+                short: false
+              }
+            ],
+            color: '#ed4e4e',
+          },
+          {
+            fields: [
+              {
+                title: `Suggestions`,
+                value: [
+                  `* Example: \`/sms +username your message\``,
+                  `* Type \`/sms dir\` to view a list of contacts`,
+                ].join('\n'),
+                short: false
+              }
+            ],
+            color: '#fa8f00',
+          },
+        ];
+
         payload = {
           organizationId: id,
           status: 200,
           validRequest: false,
           sendSms: false,
           messageType: 'slackInbound',
-          attachments: [],
+          attachments,
           chatResponse: {
             response_type: 'ephemeral',
-            text: `Error! Incorrect message for: \`${text}\`.\nPlease include +username and text for SMS messaging.\nExample: \`/sms +username your message\``,
+            text: `*ERROR*`,
           },
           smsResponse: {
             smsNumber: null,
@@ -114,14 +140,15 @@ class SlackInbound {
 
   static async renderSmsDir(req: any) {
     const { id } = req.organization;
-    let displayMessage: string = '';
     const attachments: Array<any> = [];
     const contacts: any = await Contact.all({ organizationId: id });
 
-    contacts.forEach((listItem) => {
-      displayMessage += `${listItem.firstName} ${listItem.lastName} \
-        (${listItem.smsNumber}) can be texted using \
-        +${listItem.username}\n`;
+    const contactNames = contacts.map((contact) => {
+      return `${contact.lastName}, ${contact.firstName}`;
+    });
+
+    const contactInfo = contacts.map((contact) => {
+      return `\`+${contact.username}\` or \`+${contact.smsNumber}\``;
     });
 
     const table: any = {
@@ -129,16 +156,16 @@ class SlackInbound {
       fields: [
         {
           title: 'Contact',
-          value: 'Burgess, Randy\nVanDemark Jr, Don\nVanDemark Sr, Don',
+          value: contactNames.join('\n'),
           short: true
         },
         {
-          title: 'Commands',
-          value: '+rb, +7735516808\n+donjr, +1234567890\n+donsr, +1234567890',
+          title: 'Message with /sms',
+          value: contactInfo.join('\n'),
           short: true
         }
       ],
-      color: '#F35A00',
+      color: '#0269b7',
     }
 
     attachments.push(table);
