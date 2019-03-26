@@ -1,12 +1,15 @@
-import SlackInbound from '../services/SlackInbound';
-import SlackOutbound from '../services/SlackOutbound';
-import SmsInbound from '../services/SmsInbound';
-import Organization from '../models/Organization';
+import SlackInbound from "../services/SlackInbound";
+import SlackOutbound from "../services/SlackOutbound";
+import SmsInbound from "../services/SmsInbound";
+import Organization from "../models/Organization";
 
 const slackRelay = async (req, _, next) => {
   try {
     const { channel_id } = req.body;
-    const organization = await Organization.findByVal({ field: 'slackChannelId', val: channel_id });
+    const organization = await Organization.findByVal({
+      field: "slackChannelId",
+      val: channel_id
+    });
 
     if (organization) {
       req.organization = organization;
@@ -19,15 +22,18 @@ const slackRelay = async (req, _, next) => {
     }
   } catch (err) {
     req.chasms = { status: 500 };
-    console.error('chasms > slackRelay: ', err);
+    console.error("chasms > slackRelay: ", err);
     next();
-  };
-}
+  }
+};
 
 const smsRelay = async (req, _, next) => {
   try {
     const { AccountSid } = req.body;
-    const organization = await Organization.findByVal({ field: 'twilioSid', val: AccountSid });
+    const organization = await Organization.findByVal({
+      field: "twilioSid",
+      val: AccountSid
+    });
 
     if (organization) {
       req.organization = organization;
@@ -40,12 +46,9 @@ const smsRelay = async (req, _, next) => {
     }
   } catch (err) {
     req.chasms = { status: 403 };
-    console.error('chasms > smsRelay: ', err);
+    console.error("chasms > smsRelay: ", err);
     next();
-  };
-}
-
-export {
-  slackRelay,
-  smsRelay,
+  }
 };
+
+export { slackRelay, smsRelay };
