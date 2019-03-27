@@ -21,189 +21,178 @@ class BrowserClientInbound {
     return messageBody || null;
   }
 
-  static sendSmsMessage(req) {
-    let payload = {};
-    const { id } = req.organization;
-    const { user_name, text } = req.body;
-    let recipient = {
-      chatUsername: null,
-      email: null,
-      firstName: null,
-      lastName: null,
-      smsNumber: null,
-      username: null
-    };
-
-    const phoneNumberRegex = RegExp("^\\d{10}$"); // 9876543210
-    const recipientDestination = BrowserClientInbound.extractDestinationFromCommand(
-      text
-    );
-
-    // Determine if Chat Sender used valid phone number
-    if (phoneNumberRegex.test(recipientDestination)) {
-      recipient = {
-        chatUsername: "",
-        email: "",
-        firstName: recipientDestination,
-        lastName: "",
-        smsNumber: recipientDestination,
-        username: ""
+  static async sendSmsMessage(req) {
+    try {
+      let payload = {};
+      const { id } = req.organization;
+      const { user_name, text } = req.body;
+      let recipient = {
+        chatUsername: null,
+        email: null,
+        firstName: null,
+        lastName: null,
+        smsNumber: null,
+        username: null
       };
-    } else {
-      // Or retrieve SMS Recipient by their username
-      Contact.findByVal({
-        organizationId: id,
-        field: "username",
-        val: recipientDestination.toLowerCase()
-      })
-        .then(function(res) {
-          recipient = res;
-        })
-        .catch(function(err) {
-          console.error("BrowserClientInbound > Contact.findByVal: ", err);
+
+      const phoneNumberRegex: RegExp = RegExp("^\\d{10}$"); // 9876543210
+      const recipientDestination = BrowserClientInbound.extractDestinationFromCommand(
+        text
+      );
+
+      // Determine if Chat Sender used valid phone number
+      if (phoneNumberRegex.test(recipientDestination)) {
+        recipient = {
+          chatUsername: "",
+          email: "",
+          firstName: recipientDestination,
+          lastName: "",
+          smsNumber: recipientDestination,
+          username: ""
+        };
+      } else {
+        // Or retrieve SMS Recipient by their username
+        recipient = await Contact.findByVal({
+          organizationId: id,
+          field: "username",
+          val: recipientDestination.toLowerCase()
         });
-    }
+      }
 
-    const smsMessageBody = BrowserClientInbound.extractMessageBodyFromCommand(
-      text
-    );
+      const smsMessageBody = BrowserClientInbound.extractMessageBodyFromCommand(
+        text
+      );
 
-    // Determine if SMS Recipient and Message are valid
-    if (recipient && smsMessageBody) {
-      // Retrieve Chat Sender by chat username
-      Contact.findByVal({
-        organizationId: id,
-        field: "chatUsername",
-        val: user_name
-      })
-        .then(function(sender) {
-          payload = {
-            organizationId: id,
-            status: 200,
-            validRequest: true,
-            sendSms: true,
-            messageType: "browserClientInbound",
-            attachments: [],
-            chatResponse: {
-              response_type: "none",
-              text: `${sender.chatUsername}: ${smsMessageBody}`
-            },
-            smsResponse: {
-              smsNumber: recipient.smsNumber,
-              body: `${sender.chatUsername}: ${smsMessageBody}`
-            }
-          };
-
-          req.chasms = payload;
-          Message.create(req.chasms);
-          SmsOutbound.sendMessage(req);
-        })
-        .catch(function(err) {
-          console.error("BrowserClientInbound > Contact.findByVal:", err);
-        });
-    } else {
-      const attachments = [
-        {
-          fields: [
-            {
-              title: `Incorrect contact for command: \`/sms ${text}\`.`,
-              value: `Please include a valid \`+username\` for SMS messaging.`,
-              short: false
-            }
-          ],
-          color: "#ed4e4e"
-        },
-        {
-          fields: [
-            {
-              title: `Suggestions`,
-              value: [
-                `* Example: \`/sms +username your message\``,
-                `* Type \`/sms dir\` to view a list of contacts`
-              ].join("\n"),
-              short: false
-            }
-          ],
-          color: "#fa8f00"
-        }
-      ];
-
-      payload = {
-        organizationId: id,
-        status: 200,
-        validRequest: false,
-        sendSms: false,
-        messageType: "slackInbound",
-        attachments,
-        chatResponse: {
-          response_type: "ephemeral",
-          text: `*ERROR*`
-        },
-        smsResponse: {
-          smsNumber: null,
-          body: null
-        }
-      };
-    }
-
-    return payload;
-  }
-
-  static renderSmsDir(req) {
-    const { id } = req.organization;
-    const attachments = [];
-
-    Contact.all({ organizationId: id }).then(function(contacts) {
-      const contactNames = contacts
-        .map(function(contact) {
-          return `${contact.lastName}, ${contact.firstName}`;
-        })
-        .catch(function(err) {
-          console.error("BrowserClientInbound > Contact.all:", err);
+      // Determine if SMS Recipient and Message are valid
+      if (recipient && smsMessageBody) {
+        // Retrieve Chat Sender by chat username
+        const sender = await Contact.findByVal({
+          organizationId: id,
+          field: "chatUsername",
+          val: user_name
         });
 
-      const contactInfo = contacts.map(function(contact) {
-        return `\`+${contact.username}\` or \`+${contact.smsNumber}\``;
-      });
+        payload = {
+          organizationId: id,
+          status: 200,
+          validRequest: true,
+          sendSms: true,
+          messageType: "browserClientInbound",
+          attachments: [],
+          chatResponse: {
+            response_type: "none",
+            text: `${sender.chatUsername}: ${smsMessageBody}`
+          },
+          smsResponse: {
+            smsNumber: recipient.smsNumber,
+            body: `${sender.chatUsername}: ${smsMessageBody}`
+          }
+        };
 
-      const table = {
-        fallback: "Table of Contacts",
-        fields: [
+        req.chasms = payload;
+        Message.create(req.chasms);
+        SmsOutbound.sendMessage(req);
+      } else {
+        const attachments = [
           {
-            title: "Contact",
-            value: contactNames.join("\n"),
-            short: true
+            fields: [
+              {
+                title: `Incorrect contact for command: \`/sms ${text}\`.`,
+                value: `Please include a valid \`+username\` for SMS messaging.`,
+                short: false
+              }
+            ],
+            color: "#ed4e4e"
           },
           {
-            title: "Message with /sms",
-            value: contactInfo.join("\n"),
-            short: true
+            fields: [
+              {
+                title: `Suggestions`,
+                value: [
+                  `* Example: \`/sms +username your message\``,
+                  `* Type \`/sms dir\` to view a list of contacts`
+                ].join("\n"),
+                short: false
+              }
+            ],
+            color: "#fa8f00"
           }
-        ],
-        color: "#0269b7"
-      };
+        ];
 
-      attachments.push(table);
-
-      const payload = {
-        organizationId: id,
-        status: 200,
-        validRequest: true,
-        sendSms: false,
-        messageType: "slackInbound",
-        attachments,
-        chatResponse: {
-          response_type: "ephemeral",
-          text: "Contact Directory"
-        },
-        smsResponse: {
-          smsNumber: null,
-          body: null
-        }
-      };
+        payload = {
+          organizationId: id,
+          status: 200,
+          validRequest: false,
+          sendSms: false,
+          messageType: "slackInbound",
+          attachments,
+          chatResponse: {
+            response_type: "ephemeral",
+            text: `*ERROR*`
+          },
+          smsResponse: {
+            smsNumber: null,
+            body: null
+          }
+        };
+      }
 
       return payload;
+    } catch (err) {
+      console.error("SlackInbound > sendSmsMessage:", err);
+    }
+  }
+
+  static async renderSmsDir(req) {
+    const { id } = req.organization;
+    const attachments = [];
+    const contacts = await Contact.all({ organizationId: id });
+
+    const contactNames = contacts.map(contact => {
+      return `${contact.lastName}, ${contact.firstName}`;
     });
+
+    const contactInfo = contacts.map(contact => {
+      return `\`+${contact.username}\` or \`+${contact.smsNumber}\``;
+    });
+
+    const table = {
+      fallback: "Table of Contacts",
+      fields: [
+        {
+          title: "Contact",
+          value: contactNames.join("\n"),
+          short: true
+        },
+        {
+          title: "Message with /sms",
+          value: contactInfo.join("\n"),
+          short: true
+        }
+      ],
+      color: "#0269b7"
+    };
+
+    attachments.push(table);
+
+    const payload: object = {
+      organizationId: id,
+      status: 200,
+      validRequest: true,
+      sendSms: false,
+      messageType: "slackInbound",
+      attachments,
+      chatResponse: {
+        response_type: "ephemeral",
+        text: "Contact Directory"
+      },
+      smsResponse: {
+        smsNumber: null,
+        body: null
+      }
+    };
+
+    return payload;
   }
 
   static async addToSmsDir(req) {
@@ -213,7 +202,7 @@ class BrowserClientInbound {
     // send confirmation back with buttons if valid
     // add user to directory after checking for dupe phone number
     const { id } = req.organization;
-    const payload = {
+    const payload: object = {
       organizationId: id,
       status: 200,
       validRequest: true,
@@ -235,7 +224,7 @@ class BrowserClientInbound {
 
   static renderPrefixError(req, option) {
     const { id } = req.organization;
-    const payload = {
+    const payload: object = {
       organizationId: id,
       status: 200,
       validRequest: true,
