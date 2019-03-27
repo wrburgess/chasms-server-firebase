@@ -1,10 +1,10 @@
-const admin = require("firebase-admin");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const express = require("express");
-const functions = require("firebase-functions");
-const morgan = require("morgan");
-const sourceMapSupport = require("source-map-support");
+import * as admin from "firebase-admin";
+import * as bodyParser from "body-parser";
+import * as cors from "cors";
+import * as express from "express";
+import * as functions from "firebase-functions";
+import * as morgan from "morgan";
+import * as sourceMapSupport from "source-map-support";
 sourceMapSupport.install();
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });

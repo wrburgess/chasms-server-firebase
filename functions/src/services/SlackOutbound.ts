@@ -1,12 +1,9 @@
-import axios from "axios";
+import axios from 'axios';
 
-import {
-  SLACK_EPHEMERAL_MESSAGE_URI,
-  SLACK_PUBLIC_MESSAGE_URI
-} from "../constants/config";
+import { SLACK_EPHEMERAL_MESSAGE_URI, SLACK_PUBLIC_MESSAGE_URI } from '../constants/config';
 
 class SlackOutbound {
-  static async sendDelayedReply(req, responseType = "in_channel") {
+  static async sendDelayedReply(req: any, responseType: String = 'in_channel') {
     try {
       const { slackBotToken } = req.organization;
       const { chatResponse } = req.chasms;
@@ -20,14 +17,14 @@ class SlackOutbound {
           response_type: responseType,
           text: chatResponse.text
         },
-        config
-      );
+        config,
+      )
     } catch (err) {
-      console.error("SlackOutbound > sendDelayedReply: ", err);
+      console.error('SlackOutbound > sendDelayedReply: ', err);
     }
   }
 
-  static async sendPublicMessage(req) {
+  static async sendPublicMessage(req: any) {
     try {
       const { slackBotToken, slackChannelId } = req.organization;
       const { attachments, chatResponse } = req.chasms;
@@ -42,16 +39,16 @@ class SlackOutbound {
           channel: slackChannelId,
           link_names: true,
           text: chatResponse.text,
-          attachments
+          attachments,
         },
-        config
-      );
+        config,
+      )
     } catch (err) {
-      console.error("SlackOutbound > sendPublicMessage: ", err);
+      console.error('SlackOutbound > sendPublicMessage: ', err);
     }
   }
 
-  static async sendEphemeralMessage(req) {
+  static async sendEphemeralMessage(req: any) {
     try {
       const { slackBotToken } = req.organization;
       const { channel_id, user_id } = req.body;
@@ -68,9 +65,13 @@ class SlackOutbound {
         user: user_id
       };
 
-      axios.post(SLACK_EPHEMERAL_MESSAGE_URI, payload, config);
+      axios.post(
+        SLACK_EPHEMERAL_MESSAGE_URI,
+        payload,
+        config,
+      )
     } catch (err) {
-      console.error("SlackOutbound > sendEphemeralMessage: ", err);
+      console.error('SlackOutbound > sendEphemeralMessage: ', err);
     }
   }
 }
