@@ -1,18 +1,14 @@
 {
   "name": "functions",
-  "main": "lib/index.js",
   "scripts": {
-    "build": "tsc",
+    "lint": "eslint .",
+    "serve": "firebase serve --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "lint": "tslint --project tsconfig.json",
-    "logs": "firebase functions:log",
-    "serve": "npm run build && firebase serve --only functions",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell"
+    "logs": "firebase functions:log"
   },
   "dependencies": {
-    "@types/morgan": "1.7.35",
-    "@types/source-map-support": "0.5.0",
     "axios": "0.18.0",
     "body-parser": "1.18.3",
     "cors": "2.8.5",
@@ -24,8 +20,8 @@
     "twilio": "3.29.2"
   },
   "devDependencies": {
-    "tslint": "5.14.0",
-    "typescript": "3.3.4000"
+    "eslint": "5.15.3",
+    "eslint-plugin-promise": "4.0.1"
   },
   "private": true
 }
