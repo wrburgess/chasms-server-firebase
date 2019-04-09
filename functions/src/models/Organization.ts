@@ -38,7 +38,7 @@ class Organization {
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
-        const data = querySnapshot.docs.map((docSnapshot) => {
+        const data = querySnapshot.docs.map(docSnapshot => {
           return { id: docSnapshot.id, ...docSnapshot.data() };
         });
 
@@ -57,10 +57,14 @@ class Organization {
     const { id } = attrs;
 
     try {
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(id);
+      const docRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(id);
+
       const docSnapshot = await docRef.get();
 
-      if (!docSnapshot.exists) {
+      if (docSnapshot.exists) {
         return { id: docSnapshot.id, ...docSnapshot.data() };
       } else {
         const err = new Error('No results for query');
@@ -77,11 +81,14 @@ class Organization {
 
     try {
       const db = admin.firestore();
-      const collectionRef = db.collection(ORGANIZATIONS).where(field, '==', val).limit(1);
+      const collectionRef = db
+        .collection(ORGANIZATIONS)
+        .where(field, '==', val)
+        .limit(1);
       const querySnapshot = await collectionRef.get();
 
       if (!querySnapshot.empty) {
-        const data = querySnapshot.docs.map((docSnapshot) => {
+        const data = querySnapshot.docs.map(docSnapshot => {
           return { id: docSnapshot.id, ...docSnapshot.data() };
         });
 

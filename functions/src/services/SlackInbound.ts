@@ -6,7 +6,7 @@ import SmsOutbound from '../services/SmsOutbound';
 class SlackInbound {
   static extractDestinationFromCommand(command: string) {
     const commandSplit = command.split('+')[1];
-    let destination = null;
+    let destination = '';
 
     if (commandSplit) {
       [destination] = commandSplit.split(' ');
@@ -52,7 +52,7 @@ class SlackInbound {
         recipient = await Contact.findByVal({
           organizationId: id,
           field: 'username',
-          val: recipientDestination.toLowerCase()
+          val: recipientDestination.toLowerCase(),
         });
       }
 
@@ -94,8 +94,8 @@ class SlackInbound {
               {
                 title: `Incorrect contact for command: \`/sms ${text}\`.`,
                 value: `Please include a valid \`+username\` for SMS messaging.`,
-                short: false
-              }
+                short: false,
+              },
             ],
             color: '#ed4e4e',
           },
@@ -107,8 +107,8 @@ class SlackInbound {
                   `* Example: \`/sms +username your message\``,
                   `* Type \`/sms dir\` to view a list of contacts`,
                 ].join('\n'),
-                short: false
-              }
+                short: false,
+              },
             ],
             color: '#fa8f00',
           },
@@ -143,11 +143,11 @@ class SlackInbound {
     const attachments: Array<any> = [];
     const contacts: any = await Contact.all({ organizationId: id });
 
-    const contactNames = contacts.map((contact) => {
+    const contactNames = contacts.map(contact => {
       return `${contact.lastName}, ${contact.firstName}`;
     });
 
-    const contactInfo = contacts.map((contact) => {
+    const contactInfo = contacts.map(contact => {
       return `\`+${contact.username}\` or \`+${contact.smsNumber}\``;
     });
 
@@ -157,16 +157,16 @@ class SlackInbound {
         {
           title: 'Contact',
           value: contactNames.join('\n'),
-          short: true
+          short: true,
         },
         {
           title: 'Message with /sms',
           value: contactInfo.join('\n'),
-          short: true
-        }
+          short: true,
+        },
       ],
       color: '#0269b7',
-    }
+    };
 
     attachments.push(table);
 

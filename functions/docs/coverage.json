@@ -1,0 +1,30 @@
+{
+  "coverage": "0%",
+  "expectCount": 11,
+  "actualCount": 0,
+  "files": {
+    "src/constants/config.js": {
+      "expectCount": 2,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        2
+      ]
+    },
+    "src/constants/models.js": {
+      "expectCount": 9,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    }
+  }
+}
