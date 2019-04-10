@@ -36,10 +36,10 @@ const smsRelay = async (req, _, next) => {
     const channelId: string = To.substring(1); // remove leading +
 
     if (organization && organization.channels[channelId]) {
-      req.chasms = await SmsInbound.processMessage({ req, organization });
+      req.chasms = await SmsInbound.processRequest({ req, organization });
       next();
     } else {
-      req.chasms = { status: 403 };
+      req.chasms = { status: 403, message: 'Invalid account or channel' };
       next();
     }
   } catch (err) {

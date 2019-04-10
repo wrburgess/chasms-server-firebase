@@ -4,19 +4,26 @@ import { ORGANIZATIONS, CONTACTS } from '../constants/models';
 class Contact {
   static async create(attrs) {
     try {
-      const collectionRef = admin
+      const docRef = admin
         .firestore()
         .collection(ORGANIZATIONS)
         .doc(attrs.organizationId)
-        .collection(CONTACTS);
+        .collection(CONTACTS)
+        .doc(attrs.smsNumber);
 
-      const docRef = await collectionRef.add({
+      const document = await docRef.set({
+        id: attrs.smsNumber,
+        firstName: '',
+        lastName: '',
+        username: '',
+        smsNumber: attrs.smsNumber,
+        email: '',
         ...attrs,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return docRef;
+      return document;
     } catch (err) {
       console.error('User > create: ', err);
       return null;
@@ -94,6 +101,34 @@ class Contact {
       }
     } catch (err) {
       console.error('Contact > findById: ', err);
+      return null;
+    }
+  }
+
+  static async findByValOrCreate({ organizationId, field, val }) {
+    try {
+      const collectionRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId)
+        .collection(CONTACTS);
+
+      const querySnapshot = await collectionRef
+        .where(field, '==', val)
+        .limit(1)
+        .get();
+
+      if (!querySnapshot.empty) {
+        const data = querySnapshot.docs.map(docSnapshot => {
+          return { ...docSnapshot.data() };
+        });
+
+        return data[0];
+      } else {
+        return await Contact.create({ organizationId, id: val, smsNumber: val });
+      }
+    } catch (err) {
+      console.error('User > findByVal: ', err);
       return null;
     }
   }
