@@ -4,7 +4,7 @@ import Message from '../models/Message';
 
 class ApiInbound {
   static async processMessage(req: any) {
-    const smsResponse = constructSmsResponse(req);
+    // const smsResponse = constructSmsResponse(req);
     // Does the organization use Slack?
     // Do the leading characters include an SMS valid recipient?
 

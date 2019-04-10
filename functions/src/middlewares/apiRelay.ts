@@ -20,4 +20,4 @@ const apiRelay = async (req, _, next) => {
   }
 };
 
-export { apiRelay };
+export default apiRelay;

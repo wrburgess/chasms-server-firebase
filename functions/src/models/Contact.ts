@@ -4,7 +4,11 @@ import { ORGANIZATIONS, CONTACTS } from '../constants/models';
 class Contact {
   static async create(attrs) {
     try {
-      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(attrs.organizationId).collection(CONTACTS);
+      const collectionRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(attrs.organizationId)
+        .collection(CONTACTS);
 
       const docRef = await collectionRef.add({
         ...attrs,
@@ -19,14 +23,17 @@ class Contact {
     }
   }
 
-  static async all(attrs) {
+  static async all({ organizationId }) {
     try {
-      const { organizationId } = attrs;
-      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
+      const collectionRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId)
+        .collection(CONTACTS);
       const querySnapshot = await collectionRef.orderBy('lastName').get();
 
       if (!querySnapshot.empty) {
-        const data = querySnapshot.docs.map((docSnapshot) => {
+        const data = querySnapshot.docs.map(docSnapshot => {
           return { id: docSnapshot.id, ...docSnapshot.data() };
         });
 
@@ -41,14 +48,20 @@ class Contact {
     }
   }
 
-  static async findByVal(attrs) {
+  static async findByVal({ organizationId, field, val }) {
     try {
-      const { organizationId, field, val } = attrs;
-      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
-      const querySnapshot = await collectionRef.where(field, '==', val).limit(1).get();
+      const collectionRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId)
+        .collection(CONTACTS);
+      const querySnapshot = await collectionRef
+        .where(field, '==', val)
+        .limit(1)
+        .get();
 
       if (!querySnapshot.empty) {
-        const data = querySnapshot.docs.map((docSnapshot) => {
+        const data = querySnapshot.docs.map(docSnapshot => {
           return { id: docSnapshot.id, ...docSnapshot.data() };
         });
 
@@ -63,10 +76,35 @@ class Contact {
     }
   }
 
-  static async whereByVal(attrs) {
+  static async findById({ organizationId, contactId }) {
     try {
-      const { organizationId, field, val } = attrs;
-      const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(CONTACTS);
+      const db = admin.firestore();
+      const query = db
+        .collection(ORGANIZATIONS)
+        .doc(organizationId)
+        .collection(CONTACTS)
+        .doc(contactId);
+      const docSnapshot = await query.get();
+
+      if (docSnapshot.exists) {
+        return { id: docSnapshot.id, ...docSnapshot.data() };
+      } else {
+        const err = new Error('No results for query');
+        throw err;
+      }
+    } catch (err) {
+      console.error('Contact > findById: ', err);
+      return null;
+    }
+  }
+
+  static async whereByVal({ organizationId, field, val }) {
+    try {
+      const collectionRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId)
+        .collection(CONTACTS);
       const querySnapshot = await collectionRef.where(field, '==', val).get();
 
       return querySnapshot;

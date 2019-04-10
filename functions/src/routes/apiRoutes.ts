@@ -1,4 +1,4 @@
-import { apiRelay } from '../middlewares/chasms';
+import apiRelay from '../middlewares/apiRelay';
 
 module.exports = (app, urlencodedParser) => {
   app.post('/message/create', urlencodedParser, apiRelay, (req, res) => {

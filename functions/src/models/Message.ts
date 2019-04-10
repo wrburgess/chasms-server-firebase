@@ -1,8 +1,8 @@
 import * as admin from 'firebase-admin';
 import { ORGANIZATIONS, MESSAGES } from '../constants/models';
-import Organization from './Organization';
-import Operator from './Operator';
-import Contact from './Contact';
+// import Organization from './Organization';
+// import Operator from './Operator';
+// import Contact from './Contact';
 
 class Message {
   static async create(attrs) {

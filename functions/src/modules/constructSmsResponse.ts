@@ -80,7 +80,7 @@ export default class SmsResponse {
   }
 
   instructions() {
-    const { command } = this.request.something;
+    const command = '';
     const smsNumber: string = this.getDestination(command);
     const message: string = this.getMessageBody(command);
 
