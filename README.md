@@ -28,6 +28,11 @@
 - If you want a little security with your server, use this `ngrok http -subdomain=allaboardapps -auth=username:password 8080` and visitors will need to enter your choice of the username/password combo
 - Once both ngrok and express are running locally, you can test the servers via [https://allaboardapps.ngrok.io](https://allaboardapps.ngrok.io). You can point services, such as Twilio webhooks, to routes on this domain for local testing.
 
+## Handing SMS Number Formats
+
+- Contact, Team, and Channel Ids will include Country Codes (+1)
+- Operators will only need to add + prefix, without Country Code, for sending outbound SMS
+
 ## Payloads
 
 ### Slack Request
@@ -71,7 +76,7 @@
     ToZip: '',
     NumSegments: '1',
     MessageSid: 'SMee78795cd6a2fbfcd3962c142ea604a3',
-    AccountSid: 'AC777f98cc9160b995bbbd54844a5cc,
+    AccountSid: 'AC777f98cc9160b995bbbd54844a5cc',
     From: '+17735516808',
     MediaUrl0: 'https://api.twilio.com/2010-04-01/Accounts/xxxxxxxxx/Messages/xxxxxxxxx/Media/xxxxxxxxx',
     ApiVersion: '2010-04-01'
@@ -155,9 +160,9 @@
       status: Boolean,
       body: String
     },
-    chatResponse: {
+    slackResponse: {
       status: Boolean,
-      response_type: String, // in_channel
+      response_type: String, // in_channel | ephemeral
       body: String
     },
     smsResponse: {
