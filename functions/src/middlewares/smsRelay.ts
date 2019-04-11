@@ -33,13 +33,14 @@ const smsRelay = async (req, _, next) => {
       field: 'twilioSid',
       val: AccountSid,
     });
-    const channelId: string = To.substring(1); // remove leading +
 
-    if (organization && organization.channels[channelId]) {
+    if (organization && organization.channels[To]) {
       req.chasms = await SmsInbound.processRequest({ req, organization });
       next();
     } else {
-      req.chasms = { status: 403, message: 'Invalid account or channel' };
+      const errorMessage: string = 'Invalid account or channel';
+      console.error('chasms > smsRelay: ', errorMessage);
+      req.chasms = { status: 403, errorMessage };
       next();
     }
   } catch (err) {

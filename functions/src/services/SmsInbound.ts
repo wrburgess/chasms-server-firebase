@@ -32,10 +32,25 @@ class SmsInbound {
       }
     }
 
-    if (contact) {
+    if (contact.username) {
       messageBody = `+${contact.username} (sms): ${Body}`;
     } else {
       messageBody = `${From} (sms): ${Body}`;
+    }
+
+    let slackResponse = {};
+    if (organization.usesSlack) {
+      slackResponse = {
+        status: true,
+        response_type: slackResponseTypes.IN_CHANNEL,
+        body: messageBody,
+      };
+    } else {
+      slackResponse = {
+        status: false,
+        response_type: '',
+        body: '',
+      };
     }
 
     const message = {
@@ -43,8 +58,6 @@ class SmsInbound {
       status: 200,
       type: messageTypes.SMS_INBOUND,
       requestBody: Body,
-      created_at: admin.firestore.FieldValue.serverTimestamp(),
-      updated_at: admin.firestore.FieldValue.serverTimestamp(),
       validRequest: true,
       archived: false,
       attachments,
@@ -71,7 +84,7 @@ class SmsInbound {
         id: organization.id,
         name: organization.name,
       },
-      channel: {
+      channelResponse: {
         status: true,
         id: channel.id,
         name: channel.name,
@@ -82,9 +95,7 @@ class SmsInbound {
         body: '',
       },
       slackResponse: {
-        status: true,
-        response_type: slackResponseTypes.IN_CHANNEL,
-        body: messageBody,
+        ...slackResponse,
       },
       smsResponse: {
         status: false,

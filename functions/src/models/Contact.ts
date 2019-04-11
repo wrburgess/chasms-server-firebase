@@ -11,7 +11,7 @@ class Contact {
         .collection(CONTACTS)
         .doc(attrs.smsNumber);
 
-      const document = await docRef.set({
+      await docRef.set({
         id: attrs.smsNumber,
         firstName: '',
         lastName: '',
@@ -19,11 +19,13 @@ class Contact {
         smsNumber: attrs.smsNumber,
         email: '',
         ...attrs,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return document;
+      const docSnapshot = await docRef.get();
+
+      return { ...docSnapshot.data() };
     } catch (err) {
       console.error('User > create: ', err);
       return null;

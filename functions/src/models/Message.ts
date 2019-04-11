@@ -7,7 +7,7 @@ class Message {
       const docRef = admin
         .firestore()
         .collection(ORGANIZATIONS)
-        .doc(attrs.organizationId)
+        .doc(attrs.organization.id)
         .collection(MESSAGES)
         .doc(attrs.id);
 
