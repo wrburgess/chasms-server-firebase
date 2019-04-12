@@ -2,19 +2,17 @@ import * as admin from 'firebase-admin';
 import { ORGANIZATIONS } from '../constants/models';
 
 class Organization {
-  static create(attrs) {
-    const {
-      abbreviation,
-      name,
-      slackBotToken,
-      slackAppWebhook,
-      slackChannelId,
-      slackTeamId,
-      twilioAccountPhoneNumber,
-      twilioAuthToken,
-      twilioSid,
-    } = attrs;
-
+  static create({
+    abbreviation,
+    name,
+    slackBotToken,
+    slackAppWebhook,
+    slackChannelId,
+    slackTeamId,
+    twilioAccountPhoneNumber,
+    twilioAuthToken,
+    twilioSid,
+  }) {
     const collectionRef = admin.firestore().collection(ORGANIZATIONS);
     collectionRef.add({
       abbreviation,
@@ -53,9 +51,7 @@ class Organization {
     }
   }
 
-  static async findById(attrs) {
-    const { id } = attrs;
-
+  static async findById({ id }) {
     try {
       const docRef = admin
         .firestore()
@@ -76,9 +72,7 @@ class Organization {
     }
   }
 
-  static async findByVal(attrs) {
-    const { field, val } = attrs;
-
+  static async findByVal({ field, val }) {
     try {
       const db = admin.firestore();
       const collectionRef = db
@@ -103,9 +97,7 @@ class Organization {
     }
   }
 
-  static async whereByVal(attrs) {
-    const { field, val } = attrs;
-
+  static async whereByVal({ field, val }) {
     try {
       const db = admin.firestore();
       const docRef = db.collection(ORGANIZATIONS);
@@ -116,6 +108,14 @@ class Organization {
       console.error('User > whereByVal: ', err);
       return null;
     }
+  }
+
+  static channelFindByVal({ organization, field, val }) {
+    const keys = Object.keys(organization.channels).filter(key => {
+      return organization.channels[key][field] === val;
+    });
+
+    return organization.channels[keys[0]];
   }
 }
 

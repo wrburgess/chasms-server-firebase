@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { ORGANIZATIONS, MESSAGES } from '../constants/models';
 
 class Message {
-  static async create(attrs) {
+  static async create(attrs: any) {
     try {
       const docRef = admin
         .firestore()
@@ -13,6 +13,8 @@ class Message {
 
       const document = await docRef.set({
         ...attrs,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       return document;
@@ -22,9 +24,7 @@ class Message {
     }
   }
 
-  static async findByVal(attrs) {
-    const { organizationId, field, val } = attrs;
-
+  static async findByVal({ organizationId, field, val }) {
     try {
       const collectionRef = admin
         .firestore()
@@ -52,9 +52,7 @@ class Message {
     }
   }
 
-  static async whereByVal(attrs) {
-    const { organizationId, field, val } = attrs;
-
+  static async whereByVal({ organizationId, field, val }) {
     try {
       const collectionRef = admin
         .firestore()

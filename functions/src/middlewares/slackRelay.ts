@@ -18,6 +18,7 @@ import Organization from '../models/Organization';
 // }
 
 const slackRelay = async (req, _, next) => {
+  console.log('req.body', req.body);
   try {
     const { channel_id } = req.body;
     const organization: any = await Organization.findByVal({

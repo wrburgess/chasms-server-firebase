@@ -1,4 +1,4 @@
-import validateRequest from '../modules/validateRequest';
+import validateRequest from '../utilities/validateRequest';
 import ApiInbound from '../services/ApiInbound';
 
 const apiRelay = async (req, _, next) => {

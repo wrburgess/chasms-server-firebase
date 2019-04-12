@@ -1,5 +1,4 @@
-import * as admin from 'firebase-admin';
-import AutoId from '../modules/AutoId';
+import AutoId from '../utilities/AutoId';
 import Contact from '../models/Contact';
 import Message from '../models/Message';
 import * as sourceTypes from '../constants/sourceTypes';

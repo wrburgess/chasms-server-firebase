@@ -1,58 +1,51 @@
-import Contact from '../models/Contact';
+import Organization from '../models/Organization';
 import Operator from '../models/Operator';
 import Message from '../models/Message';
-import AutoId from '../modules/AutoId';
+import AutoId from '../utilities/AutoId';
+import processCommand from '../utilities/processCommand';
 import * as sourceTypes from '../constants/sourceTypes';
 import * as authorTypes from '../constants/authorTypes';
 import * as slackResponseTypes from '../constants/slackResponseTypes';
 import * as messageTypes from '../constants/messageTypes';
+import * as commandTypes from '../constants/commandTypes';
 
 class SlackInbound {
   // {
-  //   reqBody: {
-  //     token: 'SDRmZxxxxxxxJAFuE5Dm',
-  //     team_id: 'T0xxxxxxE1',
-  //     team_domain: 'allaboardapps',
-  //     channel_id: 'G9xxxxxH8',
-  //     channel_name: 'privategroup',
-  //     user_id: 'U0xxxxxJ3',
-  //     user_name: 'wrburgess',
-  //     command: '/sms',
-  //     text: 'dir',
-  //     response_url: 'https://hooks.slack.com/commands/T0xxxxxE1/3939xxxxxxx24/5sxxxxxxxxxxxj0FEeGjs',
-  //     trigger_id: '393xxxxxx4273.1552xxxxxx77.7ca707exxxxxx58c478bdf1xxxxx86'
-  //   }
+  //   token: 'SDRmZI671hiYZqzrJAFuE5Dm',
+  //   team_id: 'T0FFFQFE1',
+  //   team_domain: 'allaboardapps',
+  //   channel_id: 'G9RMHEMH8',
+  //   channel_name: 'privategroup',
+  //   user_id: 'U0FFL28J3',
+  //   user_name: 'wrburgess',
+  //   command: '/sms',
+  //   text: '+7735516808 test 04',
+  //   response_url: 'https://hooks.slack.com/commands/T0FFFQFE1/605474729588/y9EHANuN0maT9BxNxtxqzsUe',
+  //   trigger_id: '594564187171.15525831477.23a8017c74fa742d4d8ebfcfda0ce320'
   // }
 
   static async processMessage(req: any, organization: any) {
-    // const option: string = req.body.text.split(' ')[0];
-
-    // if (option === 'dir') {
-    //   req.chasms = await SlackInbound.renderSmsDir(req);
-    // } else if (option === 'add') {
-    //   req.chasms = await SlackInbound.addToSmsDir(req);
-    // } else {
-    //   req.chasms = await SlackInbound.renderPrefixError(req, option);
-    // }
-
-    const channel: any = organization.channels.filter(channel => {
-      return channel.slackChannelId === req.channel_id;
-    });
-
-    let operator: any = Operator.findByVal({ field: 'slackUserName', val: req.user_name });
+    const command: any = processCommand(req.text, organization);
+    const channel: any = Organization.channelFindByVal({ organization, field: 'slackChannelId', val: req.channel_id });
+    let operator: any = Operator.findByVal({ organization, field: 'slackUserName', val: req.user_name });
+    let contact: any = command.contact;
 
     let smsResponse: any = {};
-    if (channel[0] && 'leading +') {
+    if (channel && command.type === commandTypes.OUTBOUND_SMS) {
+      // construct sms response
       smsResponse = {
         status: true,
-        smsNumber: '',
+        smsNumber: command.smsNumber,
         body: req.text,
+        contact,
       };
     } else {
+      // negate sms response
       smsResponse = {
         status: false,
         smsNumber: '',
         body: '',
+        contact: {},
       };
     }
 
@@ -63,6 +56,7 @@ class SlackInbound {
         response_type: slackResponseTypes.IN_CHANNEL,
         body: req.text,
         token: req.token,
+        channel_id: req.channel_id,
       };
     } else {
       slackResponse = {
@@ -70,13 +64,14 @@ class SlackInbound {
         response_type: '',
         body: '',
         token: '',
+        channel_id: '',
       };
     }
 
     const channelResponse: any = {
       status: true,
-      id: channel[0].id,
-      name: channel[0].name,
+      id: channel.id,
+      name: channel.name,
       body: req.text,
     };
 
