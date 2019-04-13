@@ -11,9 +11,10 @@ const casualSmsNumber = /\d{10}/;
 
 const extractCompleteSmsNumber: any = function(command: string) {
   if (completeSmsNumberAndText.test(command)) {
-    return `+${command.match(fullSmsNumber)![1]}`;
+    console.log('command.match(fullSmsNumber)', command.match(fullSmsNumber)![0]);
+    return `+${command.match(fullSmsNumber)![0]}`;
   } else if (commandSmsNumberAndText.test(command)) {
-    return `+1${command.match(casualSmsNumber)![1]}`;
+    return `+1${command.match(casualSmsNumber)![0]}`;
   } else {
     return '';
   }
