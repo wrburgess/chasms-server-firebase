@@ -9,9 +9,9 @@ describe('utilities/extractCompleteSmsNumber', () => {
   });
 
   it('should extract a Complete SMS Number given a Command SMS number', () => {
-    const casualSmsNumber = faker.phone.phoneNumber('+##########');
-    const completeSmsNumber = `+1${casualSmsNumber.substring(1)}`;
-    const command = `${casualSmsNumber} {faker.lorem.sentence}`;
+    const commandSmsNumber = faker.phone.phoneNumber('+##########');
+    const completeSmsNumber = `+1${commandSmsNumber.substring(1)}`;
+    const command = `${commandSmsNumber} {faker.lorem.sentence}`;
     expect(extractCompleteSmsNumber(command)).toBe(completeSmsNumber);
   });
 

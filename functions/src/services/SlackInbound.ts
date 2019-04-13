@@ -25,15 +25,10 @@ class SlackInbound {
   // }
 
   static async processMessage({ req, organization }) {
-    console.log('SlackInbound > processMessage > req.text:', req.text);
     const command: any = processCommand({ command: req.text, organization });
-    console.log('SlackInbound > processMessage > command:', command);
     const channel: any = Organization.channelFindByVal({ organization, field: 'slackChannelId', val: req.channel_id });
-    console.log('SlackInbound > processMessage  > channel:', channel);
     let operator: any = Operator.findByVal({ organization, field: 'slackUserName', val: req.user_name });
-    console.log('SlackInbound > processMessage  > operator:', operator);
     let contact: any = command.contact;
-    console.log('SlackInbound > processMessage  > contact:', contact);
 
     let smsResponse: any = {};
     if (channel && command.type === commandTypes.OUTBOUND_SMS) {

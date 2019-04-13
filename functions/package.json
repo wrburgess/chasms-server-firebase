@@ -13,7 +13,8 @@
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "docs": "./node_modules/.bin/esdoc && open ./docs/index.html",
-    "test": "jest --verbose=false"
+    "test": "jest --verbose=false",
+    "testv": "jest --verbose=true"
   },
   "dependencies": {
     "@types/morgan": "1.7.35",

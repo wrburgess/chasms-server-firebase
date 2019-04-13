@@ -76,8 +76,7 @@ class Contact {
 
         return data[0];
       } else {
-        const err = new Error('No results for query');
-        throw err;
+        return null;
       }
     } catch (err) {
       console.error('Contact > findByVal: ', err);
@@ -98,8 +97,7 @@ class Contact {
       if (docSnapshot.exists) {
         return { id: docSnapshot.id, ...docSnapshot.data() };
       } else {
-        const err = new Error('No results for query');
-        throw err;
+        return null;
       }
     } catch (err) {
       console.error('Contact > findById: ', err);
