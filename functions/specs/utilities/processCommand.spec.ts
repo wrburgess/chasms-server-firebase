@@ -124,7 +124,7 @@ describe('utilities/processCommand', () => {
   it('should process the command given an unknown prefix', () => {
     const organization = {};
     const command = `blah ${faker.lorem.words()}`;
-    console.log('command', command);
+
     const result = {
       type: commandTypes.INVALID,
       message: `Error: Unknown command of "${command}"`,
