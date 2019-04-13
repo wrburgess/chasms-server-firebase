@@ -112,9 +112,10 @@ class Organization {
 
   static channelFindByVal({ organization, field, val }) {
     const keys = Object.keys(organization.channels).filter(key => {
-      return organization.channels[key][field] === val;
+      return organization.channels[key] && organization.channels[key][field] === val;
     });
 
+    console.log('Organization > channelFindByVal:', organization.channels[keys[0]]);
     return organization.channels[keys[0]];
   }
 }

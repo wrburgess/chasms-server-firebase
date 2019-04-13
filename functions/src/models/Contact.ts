@@ -27,7 +27,7 @@ class Contact {
 
       return { ...docSnapshot.data() };
     } catch (err) {
-      console.error('User > create: ', err);
+      console.error('Contact > create: ', err);
       return null;
     }
   }
@@ -52,7 +52,7 @@ class Contact {
         throw err;
       }
     } catch (err) {
-      console.error('User > all: ', err);
+      console.error('Contact > all: ', err);
       return null;
     }
   }
@@ -80,7 +80,7 @@ class Contact {
         throw err;
       }
     } catch (err) {
-      console.error('User > findByVal: ', err);
+      console.error('Contact > findByVal: ', err);
       return null;
     }
   }

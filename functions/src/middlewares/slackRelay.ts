@@ -18,7 +18,6 @@ import Organization from '../models/Organization';
 // }
 
 const slackRelay = async (req, _, next) => {
-  console.log('req.body', req.body);
   try {
     const { channel_id } = req.body;
     const organization: any = await Organization.findByVal({
@@ -27,7 +26,7 @@ const slackRelay = async (req, _, next) => {
     });
 
     if (organization && organization.usesSlack) {
-      SlackInbound.processMessage(req, organization);
+      SlackInbound.processMessage({ req: req.body, organization });
       req.chasms = { acknowledge: true };
       next();
     } else {

@@ -24,11 +24,16 @@ class SlackInbound {
   //   trigger_id: '594564187171.15525831477.23a8017c74fa742d4d8ebfcfda0ce320'
   // }
 
-  static async processMessage(req: any, organization: any) {
-    const command: any = processCommand(req.text, organization);
+  static async processMessage({ req, organization }) {
+    console.log('SlackInbound > processMessage > req.text:', req.text);
+    const command: any = processCommand({ command: req.text, organization });
+    console.log('SlackInbound > processMessage > command:', command);
     const channel: any = Organization.channelFindByVal({ organization, field: 'slackChannelId', val: req.channel_id });
+    console.log('SlackInbound > processMessage  > channel:', channel);
     let operator: any = Operator.findByVal({ organization, field: 'slackUserName', val: req.user_name });
+    console.log('SlackInbound > processMessage  > operator:', operator);
     let contact: any = command.contact;
+    console.log('SlackInbound > processMessage  > contact:', contact);
 
     let smsResponse: any = {};
     if (channel && command.type === commandTypes.OUTBOUND_SMS) {

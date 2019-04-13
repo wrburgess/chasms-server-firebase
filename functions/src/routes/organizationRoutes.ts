@@ -4,6 +4,7 @@ const createOrganization = async (req, res, next) => {
   const {
     abbreviation,
     name,
+    slackBotToken,
     slackAppWebhook,
     slackChannelId,
     slackTeamId,
@@ -15,6 +16,7 @@ const createOrganization = async (req, res, next) => {
   const attrs = {
     abbreviation,
     name,
+    slackBotToken,
     slackAppWebhook,
     slackChannelId,
     slackTeamId,
@@ -39,9 +41,9 @@ const findOrganization = async (req, res, next) => {
   const attrs = { id };
 
   try {
-    res.data = await Organization.findById(attrs)
+    res.data = await Organization.findById(attrs);
     next();
-  } catch(err) {
+  } catch (err) {
     console.error(err);
     next();
   }
@@ -58,30 +60,15 @@ const getAllOrganizations = async (req, res, next) => {
 };
 
 module.exports = (app, urlencodedParser) => {
-  app.post(
-    '/organizations/create',
-    urlencodedParser,
-    createOrganization,
-    (req, res) => {
-      res.status(201).end();
-    }
-  );
+  app.post('/organizations/create', urlencodedParser, createOrganization, (req, res) => {
+    res.status(201).end();
+  });
 
-  app.post(
-    '/organizations/show',
-    urlencodedParser,
-    findOrganization,
-    (req, res) => {
-      res.send(res.data);
-    }
-  );
+  app.post('/organizations/show', urlencodedParser, findOrganization, (req, res) => {
+    res.send(res.data);
+  });
 
-  app.post(
-    '/organizations/index',
-    urlencodedParser,
-    getAllOrganizations,
-    (req, res) => {
-      res.send(res.data);
-    }
-  );
+  app.post('/organizations/index', urlencodedParser, getAllOrganizations, (req, res) => {
+    res.send(res.data);
+  });
 };
