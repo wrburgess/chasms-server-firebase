@@ -1,5 +1,18 @@
 # Chasms Server on Firebase
 
+## Phone Number Labels
+
+- Complete SMS Number: Plus, Country Code, and Phone Number (ex: +17735516808)
+- Full SMS Number: Country Code, Area Code, and Phone Number (ex: 17735516808)
+- Command SMS Number: Plus, Area Code, and Phone Number (ex: +7735516808)
+- Casual SMS Number: Area Code and Phone Number (ex: 7735516808)
+- Short SMS Number: Phone Number (ex: 5516808)
+
+* `Complete` SMS Numbers are used for Contact ID and Channel ID
+* `Command` and `Complete` SMS Numbers are used by Operators in chat channels for USA-based numbers
+* `Full` and `Casual` SMS Numbers are used by Operators for adding, editing, or searching for Contacts
+* `Short` SMS Numbers are not allowed in the system
+
 ## References
 
 - [Firebase docs](https://firebase.google.com/docs/)
