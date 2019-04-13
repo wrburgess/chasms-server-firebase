@@ -14,4 +14,11 @@ describe('utilities/extractCompleteSmsNumber', () => {
     const command = `${casualSmsNumber} {faker.lorem.sentence}`;
     expect(extractCompleteSmsNumber(command)).toBe(completeSmsNumber);
   });
+
+  it('should return an empty string if a non-compliant SMS Number is prefixed', () => {
+    const nonCompliantSmsNumber = faker.phone.phoneNumber('+####');
+    const emptyString = '';
+    const command = `${nonCompliantSmsNumber} {faker.lorem.sentence}`;
+    expect(extractCompleteSmsNumber(command)).toBe(emptyString);
+  });
 });
