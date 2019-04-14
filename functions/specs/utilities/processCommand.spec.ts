@@ -7,7 +7,8 @@ describe('utilities/processCommand', () => {
   it('should process the command given a Complete SMS Number', () => {
     const completeSmsNumber: string = faker.phone.phoneNumber('+1##########');
     const organization: any = { id: faker.random.uuid() };
-    const command: string = `${completeSmsNumber} ${faker.lorem.sentence()}`;
+    const messageBody: string = faker.lorem.sentence();
+    const command: string = `${completeSmsNumber} ${messageBody}`;
     const contact: any = {
       id: faker.random.uuid(),
       firstName: faker.name.firstName(),
@@ -18,12 +19,13 @@ describe('utilities/processCommand', () => {
 
     const result: any = {
       completeSmsNumber,
+      messageBody,
       type: commandTypes.OUTBOUND_SMS,
-      message: 'Valid command',
+      errorMessage: 'Valid command',
       contact,
     };
 
-    const asyncContactMock: any = jest.spyOn(Contact, 'findById');
+    const asyncContactMock: any = jest.spyOn(Contact, 'findByValOrCreate');
     asyncContactMock.mockResolvedValue(contact);
 
     return expect(processCommand({ command, organization })).resolves.toEqual(result);
@@ -33,7 +35,8 @@ describe('utilities/processCommand', () => {
     const commandSmsNumber: string = faker.phone.phoneNumber('+##########');
     const completeSmsNumber: string = `+1${commandSmsNumber.substring(1)}`;
     const organization: any = { id: faker.random.uuid() };
-    const command: string = `${commandSmsNumber} ${faker.lorem.sentence()}`;
+    const messageBody: string = faker.lorem.sentence();
+    const command: string = `${completeSmsNumber} ${messageBody}`;
     const contact: any = {
       id: faker.random.uuid(),
       firstName: faker.name.firstName(),
@@ -44,12 +47,13 @@ describe('utilities/processCommand', () => {
 
     const result = {
       completeSmsNumber,
+      messageBody,
       type: commandTypes.OUTBOUND_SMS,
-      message: 'Valid command',
+      errorMessage: 'Valid command',
       contact,
     };
 
-    const asyncContactMock: any = jest.spyOn(Contact, 'findById');
+    const asyncContactMock: any = jest.spyOn(Contact, 'findByValOrCreate');
     asyncContactMock.mockResolvedValue(contact);
 
     return expect(processCommand({ command, organization })).resolves.toEqual(result);
@@ -63,12 +67,14 @@ describe('utilities/processCommand', () => {
       username: faker.internet.userName(),
       completeSmsNumber: faker.phone.phoneNumber('+##########'),
     };
-    const command = `+${contact.username} ${faker.lorem.sentence()}`;
+    const messageBody: string = faker.lorem.sentence();
+    const command = `+${contact.username} ${messageBody}`;
     const organization = {};
     const result = {
       completeSmsNumber: contact.completeSmsNumber,
+      messageBody,
       type: commandTypes.OUTBOUND_SMS,
-      message: 'Valid command',
+      errorMessage: 'Valid command',
       contact,
     };
 
@@ -80,12 +86,14 @@ describe('utilities/processCommand', () => {
 
   it('should render an invalid response if there is no Contact associated with +username prefix', () => {
     const contact: any = {};
-    const command = `+non ${faker.lorem.sentence()}`;
+    const messageBody: string = faker.lorem.sentence();
+    const command = `+non ${messageBody}`;
     const organization = {};
     const result = {
       completeSmsNumber: '',
+      messageBody,
       type: commandTypes.INVALID,
-      message: 'Unknown username',
+      errorMessage: 'Unknown username',
       contact,
     };
 
@@ -97,10 +105,12 @@ describe('utilities/processCommand', () => {
 
   it('should process the command given a "dir" prefix', () => {
     const organization = {};
-    const command = `dir ${faker.lorem.words()}`;
+    const messageBody: string = faker.lorem.sentence();
+    const command = `dir ${messageBody}`;
     const result = {
       type: commandTypes.RENDER_DIRECTORY,
-      message: 'Valid command',
+      messageBody,
+      errorMessage: 'Valid command',
       contact: {},
       completeSmsNumber: '',
     };
@@ -110,10 +120,12 @@ describe('utilities/processCommand', () => {
 
   it('should process the command given an "add" prefix', () => {
     const organization = {};
-    const command = `add ${faker.lorem.words()}`;
+    const messageBody: string = faker.lorem.sentence();
+    const command = `add ${messageBody}`;
     const result = {
       type: commandTypes.ADD_CONTACT,
-      message: 'Valid command',
+      messageBody,
+      errorMessage: 'Valid command',
       contact: {},
       completeSmsNumber: '',
     };
@@ -123,11 +135,13 @@ describe('utilities/processCommand', () => {
 
   it('should process the command given an unknown prefix', () => {
     const organization = {};
-    const command = `blah ${faker.lorem.words()}`;
+    const messageBody: string = faker.lorem.sentence();
+    const command = `blah ${messageBody}`;
 
     const result = {
       type: commandTypes.INVALID,
-      message: `Error: Unknown command of "${command}"`,
+      messageBody,
+      errorMessage: `Error: Unknown command of "${command}"`,
       contact: {},
       completeSmsNumber: '',
     };

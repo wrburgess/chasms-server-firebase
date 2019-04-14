@@ -25,38 +25,38 @@ class SlackInbound {
   // }
 
   static async processMessage({ req, organization }) {
-    const command: any = processCommand({ command: req.text, organization });
+    const command: any = await processCommand({ command: req.text, organization });
     const channel: any = Organization.channelFindByVal({ organization, field: 'slackChannelId', val: req.channel_id });
-    let operator: any = Operator.findByVal({ organization, field: 'slackUserName', val: req.user_name });
+    let operator: any = await Operator.findByVal({ organization, field: 'slackUserName', val: req.user_name });
     let contact: any = command.contact;
 
     let smsResponse: any = {};
     if (channel && command.type === commandTypes.OUTBOUND_SMS) {
       // construct sms response
       smsResponse = {
-        status: true,
-        smsNumber: command.smsNumber,
-        body: req.text,
+        body: command.messageBody,
+        completeSmsNumber: command.completeSmsNumber,
         contact,
+        status: true,
       };
     } else {
       // negate sms response
       smsResponse = {
-        status: false,
-        smsNumber: '',
         body: '',
+        completeSmsNumber: '',
         contact: {},
+        status: false,
       };
     }
 
     let slackResponse: any = {};
     if (organization.usesSlack) {
       slackResponse = {
-        status: true,
-        response_type: slackResponseTypes.IN_CHANNEL,
-        body: req.text,
-        token: req.token,
+        body: `+${contact.username} ${command.messageBody}`,
         channel_id: req.channel_id,
+        response_type: slackResponseTypes.IN_CHANNEL,
+        status: true,
+        token: req.token,
       };
     } else {
       slackResponse = {
@@ -72,7 +72,7 @@ class SlackInbound {
       status: true,
       id: channel.id,
       name: channel.name,
-      body: req.text,
+      body: `+${contact.username} ${command.messageBody}`,
     };
 
     const message = {
@@ -97,7 +97,7 @@ class SlackInbound {
         firstName: operator.firstName,
         lastName: operator.lastName,
         username: operator.username,
-        smsNumber: operator.smsNumber,
+        completeSmsNumber: operator.completeSmsNumber,
         email: operator.email,
       },
       organization: {
