@@ -121,6 +121,7 @@ class SlackInbound {
 
     Message.create(message);
 
+    // console.log('message', message);
     return message;
   }
 }

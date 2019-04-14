@@ -115,7 +115,6 @@ class Organization {
       return organization.channels[key] && organization.channels[key][field] === val;
     });
 
-    console.log('Organization > channelFindByVal:', organization.channels[keys[0]]);
     return organization.channels[keys[0]];
   }
 }
