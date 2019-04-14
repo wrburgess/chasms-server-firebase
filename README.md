@@ -52,7 +52,7 @@
 
 ```js
 {
-  reqBody:{
+  reqBody: {
     token: 'SDRmZxxxxxxxJAFuE5Dm',
     team_id: 'T0xxxxxxE1',
     team_domain: 'allaboardapps',
