@@ -8,6 +8,7 @@ import Operator from '../../src/models/Operator';
 import Message from '../../src/models/Message';
 import Contact from '../../src/models/Contact';
 import AutoId from '../../src/utilities/AutoId';
+import { contact, operator, slackRequest } from '../factories';
 
 describe('services/SlackInbound', () => {
   it('render the correct Message object from a Slack command with Complete SMS Number', () => {
@@ -17,39 +18,13 @@ describe('services/SlackInbound', () => {
     const contactSmsNumber = faker.phone.phoneNumber('+1##########');
     const messageId = faker.random.uuid();
 
-    const contact = {
-      id: faker.random.uuid(),
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
-      username: faker.internet.userName(),
-      completeSmsNumber: contactSmsNumber,
-    };
+    contact.completeSmsNumber = contactSmsNumber;
 
     const slackMessageBody = `${contact.completeSmsNumber} ${messageBody}`;
 
-    const operator = {
-      id: faker.random.uuid(),
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
-      username: faker.internet.userName(),
-      completeSmsNumber: faker.phone.phoneNumber('+1#########'),
-      email: faker.internet.email,
-      slackUserName: faker.internet.userName(),
-    };
-
-    const slackRequest = {
-      token: faker.random.uuid(),
-      team_id: faker.random.uuid(),
-      team_domain: faker.internet.userName(),
-      channel_id: channelSmsNumber1,
-      channel_name: 'privategroup',
-      user_id: faker.random.uuid(),
-      user_name: operator.slackUserName,
-      command: '/sms',
-      text: slackMessageBody,
-      response_url: `https://hooks.slack.com/commands/${faker.random.uuid()}`,
-      trigger_id: faker.random.uuid(),
-    };
+    slackRequest.channel_id = channelSmsNumber1;
+    slackRequest.user_name = operator.slackUserName;
+    slackRequest.text = slackMessageBody;
 
     const organization = {
       id: faker.random.uuid(),
