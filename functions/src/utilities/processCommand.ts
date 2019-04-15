@@ -5,7 +5,7 @@ import extractMessageFromCommand from './extractMessageFromCommand';
 
 const completeSmsNumberAndText = /^\+1\d{10}\ .+$/; // +11234567890
 const commandSmsNumberAndText = /^\+\d{10}\ .+$/; // +1234567890
-const leadingUsername = /^\+\S{2,15}\ .+$/; // +ab
+const leadingUsername = /^\++\S+/; // +ab
 const add = /^add\ .+$/;
 const dir = /^dir\ .*$/;
 
@@ -15,6 +15,8 @@ const processCommand: any = async function({ command, organization }) {
   let type: string = '';
   let errorMessage: string = 'Valid command';
   let contact: any = {};
+  console.log('command', command);
+  console.log('leadingUsername.test(command)', leadingUsername.test(command));
 
   if (completeSmsNumberAndText.test(command)) {
     completeSmsNumber = extractCompleteSmsNumber(command);
@@ -39,7 +41,7 @@ const processCommand: any = async function({ command, organization }) {
     messageBody = extractMessageFromCommand(command);
     contact = await Contact.findByVal({ organizationId: organization.id, field: 'username', val: username });
 
-    if (contact) {
+    if (contact.id) {
       type = commandTypes.OUTBOUND_SMS;
       completeSmsNumber = contact.completeSmsNumber;
     } else {

@@ -1,7 +1,7 @@
-import contact from './contact';
+import ContactFactory from './ContactFactory';
 import message from './message';
-import operator from './operator';
+import OperatorFactory from './OperatorFactory';
 import organization from './organization';
 import slackRequest from './slackRequest';
 
-export { contact, message, operator, organization, slackRequest };
+export { ContactFactory, message, OperatorFactory, organization, slackRequest };

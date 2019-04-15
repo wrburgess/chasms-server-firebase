@@ -31,7 +31,7 @@ class SlackInbound {
     let contact: any = command.contact;
 
     let smsResponse: any = {};
-    if (channel && command.type === commandTypes.OUTBOUND_SMS) {
+    if (command.type === commandTypes.OUTBOUND_SMS && channel.id) {
       // construct sms response
       smsResponse = {
         body: command.messageBody,
@@ -50,7 +50,7 @@ class SlackInbound {
     }
 
     let slackResponse: any = {};
-    if (organization.usesSlack) {
+    if (organization.usesSlack && command.type !== commandTypes.INVALID) {
       slackResponse = {
         body: `+${contact.username} ${command.messageBody}`,
         channel_id: req.channel_id,
@@ -58,22 +58,32 @@ class SlackInbound {
         status: true,
         token: req.token,
       };
-    } else {
+    } else if (organization.usesSlack && command.type === commandTypes.INVALID) {
       slackResponse = {
-        status: false,
-        response_type: '',
-        body: '',
-        token: '',
-        channel_id: '',
+        body: `Unknown username for command: ${req.text}`,
+        channel_id: req.channel_id,
+        response_type: slackResponseTypes.EPHEMERAL,
+        status: true,
+        token: req.token,
       };
     }
 
-    const channelResponse: any = {
-      status: true,
-      id: channel.id,
-      name: channel.name,
-      body: `+${contact.username} ${command.messageBody}`,
-    };
+    let channelResponse: any = {};
+    if (channel.id && command.type !== commandTypes.INVALID) {
+      channelResponse = {
+        body: `+${contact.username} ${command.messageBody}`,
+        id: channel.id,
+        name: channel.name,
+        status: true,
+      };
+    } else {
+      channelResponse = {
+        body: '',
+        id: '',
+        name: '',
+        status: false,
+      };
+    }
 
     const message = {
       id: AutoId.newId(),
