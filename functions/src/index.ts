@@ -20,6 +20,8 @@ require('./routes/slackRoutes')(app, urlencodedParser);
 require('./routes/contactRoutes')(app, urlencodedParser);
 require('./routes/organizationRoutes')(app, urlencodedParser);
 
+export * from './triggers/onMessageCreate';
+
 // If dev environment, use local config
 if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
   const serviceAccount = require('../.service-account-credentials.json');
@@ -30,11 +32,5 @@ if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
 } else {
   admin.initializeApp();
 }
-
-exports.onMessageCreate = functions.firestore
-  .document('organizations/{organizationId}/messages/{messageId}')
-  .onCreate((documentSnapshot, context) => {
-    console.log('path', documentSnapshot.ref.path);
-  });
 
 exports.chasms = functions.https.onRequest(app);

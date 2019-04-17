@@ -1,24 +1,21 @@
-import * as Twilio from "twilio";
+import * as Twilio from 'twilio';
 
 class SmsOutbound {
-  static async sendMessage(req: any) {
+  static async sendMessage(message: any) {
     try {
-      const {
-        twilioSid,
-        twilioAuthToken,
-        twilioAccountPhoneNumber
-      } = req.organization;
+      const { body, completeSmsNumber, twilioAccountPhoneNumber, twilioAuthToken, twilioSid } = message.smsResponse;
+
       const twilio = Twilio(twilioSid, twilioAuthToken);
-      const { body, smsNumber } = req.chasms.smsResponse;
+
       const message = {
         from: twilioAccountPhoneNumber,
-        to: `1${smsNumber}`,
-        body: body
+        to: completeSmsNumber,
+        body: body,
       };
 
       await twilio.messages.create(message);
     } catch (err) {
-      console.error("SmsOutbound > sendMessage:", err);
+      console.error('SmsOutbound > sendMessage:', err);
     }
   }
 }
