@@ -8,8 +8,8 @@ import * as messageTypes from '../constants/messageTypes';
 
 class SmsInbound {
   static async processRequest({ req, organization }) {
-    const { AccountSid, SmsSid, ApiVersion, Body, To, From, NumMedia } = req.body;
-    let messageBody: string = '';
+    const { Body, To, From, NumMedia } = req;
+    let formattedMessageBody: string = '';
 
     const channel: any = organization.channels[To];
     const contact: any = await Contact.findByValOrCreate({
@@ -32,30 +32,34 @@ class SmsInbound {
     }
 
     if (contact.username) {
-      messageBody = `+${contact.username} (sms): ${Body}`;
+      formattedMessageBody = `+${contact.username} (sms): ${Body}`;
     } else {
-      messageBody = `${From} (sms): ${Body}`;
+      formattedMessageBody = `${From} (sms): ${Body}`;
     }
 
     let slackResponse = {};
     if (organization.usesSlack) {
       slackResponse = {
-        status: true,
+        body: formattedMessageBody,
+        channel_id: organization.slackChannelId,
         response_type: slackResponseTypes.IN_CHANNEL,
-        body: messageBody,
+        status: true,
+        token: organization.slackBotToken,
       };
     } else {
       slackResponse = {
-        status: false,
-        response_type: '',
         body: '',
+        channel_id: '',
+        response_type: '',
+        status: false,
+        token: '',
       };
     }
 
     const message = {
       id: AutoId.newId(),
       status: 200,
-      type: messageTypes.SMS_INBOUND,
+      type: messageTypes.TWILIO_INBOUND,
       requestBody: Body,
       validRequest: true,
       archived: false,
@@ -65,9 +69,7 @@ class SmsInbound {
       source: {
         type: sourceTypes.TWILIO,
         meta: {
-          AccountSid,
-          SmsSid,
-          ApiVersion,
+          ...req,
         },
       },
       author: {
@@ -76,8 +78,7 @@ class SmsInbound {
         firstName: contact.firstName,
         lastName: contact.lastName,
         username: contact.username,
-        smsNumber: contact.smsNumber,
-        email: contact.email,
+        completeSmsNumber: contact.completeSmsNumber,
       },
       organization: {
         id: organization.id,
@@ -87,7 +88,7 @@ class SmsInbound {
         status: true,
         id: channel.id,
         name: channel.name,
-        body: messageBody,
+        body: formattedMessageBody,
       },
       apiResponse: {
         status: false,
@@ -98,8 +99,9 @@ class SmsInbound {
       },
       smsResponse: {
         status: false,
-        smsNumber: '',
+        completeSmsNumber: '',
         body: '',
+        contact: {},
       },
     };
 

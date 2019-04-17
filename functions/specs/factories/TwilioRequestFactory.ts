@@ -51,23 +51,23 @@ class TwilioRequestFactory {
     ToCountry = faker.address.countryCode(),
     MediaContentType0 = 'image/jpeg',
     ToState = faker.address.stateAbbr(),
-    SmsMessageSid = string,
-    NumMedia = string,
+    SmsMessageSid = faker.random.uuid(),
+    NumMedia = faker.random.number.toString(),
     ToCity = faker.address.city(),
     FromZip = faker.address.zipCode(),
-    SmsSid = string,
+    SmsSid = faker.random.uuid(),
     FromState = faker.address.stateAbbr(),
-    SmsStatus = string,
+    SmsStatus = 'received',
     FromCity = faker.address.city(),
-    Body = string,
+    Body = faker.lorem.sentence(),
     FromCountry = faker.address.countryCode(),
-    To = string,
+    To = faker.phone.phoneNumber('+1##########'),
     ToZip = faker.address.zipCode(),
-    NumSegments = string,
-    MessageSid = string,
-    AccountSid = string,
-    From = string,
-    MediaUrl0 = string,
+    NumSegments = faker.random.number.toString(),
+    MessageSid = faker.random.uuid(),
+    AccountSid = faker.random.uuid(),
+    From = faker.phone.phoneNumber('+1##########'),
+    MediaUrl0 = faker.internet.url(),
     ApiVersion = '2010-04-01',
   }) {
     this.ToCountry = ToCountry;
@@ -81,6 +81,7 @@ class TwilioRequestFactory {
     this.FromState = FromState;
     this.SmsStatus = SmsStatus;
     this.FromZip = FromZip;
+    this.FromCity = FromCity;
     this.Body = Body;
     this.FromCountry = FromCountry;
     this.To = To;
@@ -94,4 +95,4 @@ class TwilioRequestFactory {
   }
 }
 
-export default slackRequest;
+export default TwilioRequestFactory;

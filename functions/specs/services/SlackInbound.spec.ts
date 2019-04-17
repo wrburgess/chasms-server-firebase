@@ -8,7 +8,7 @@ import Operator from '../../src/models/Operator';
 import Message from '../../src/models/Message';
 import Contact from '../../src/models/Contact';
 import AutoId from '../../src/utilities/AutoId';
-import { ContactFactory, OperatorFactory, OrganizationFactory, slackRequest } from '../factories';
+import { ContactFactory, OperatorFactory, OrganizationFactory, SlackRequestFactory } from '../factories';
 
 describe('services/SlackInbound', () => {
   it('renders the correct Message object from a Slack command with valid Complete SMS Number', () => {
@@ -19,9 +19,11 @@ describe('services/SlackInbound', () => {
     const slackMessageBody = `${contactCompleteSmsNumber} ${messageBody}`;
     const operator = new OperatorFactory({});
 
-    slackRequest.channel_id = channelCompleteSmsNumber;
-    slackRequest.user_name = operator.slackUserName;
-    slackRequest.text = slackMessageBody;
+    const slackRequest = new SlackRequestFactory({
+      channel_id: channelCompleteSmsNumber,
+      user_name: operator.slackUserName,
+      text: slackMessageBody,
+    });
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
 
@@ -119,9 +121,11 @@ describe('services/SlackInbound', () => {
 
     const slackMessageBody = `${contactCommandSmsNumber} ${messageBody}`;
 
-    slackRequest.channel_id = channelCompleteSmsNumber;
-    slackRequest.user_name = operator.slackUserName;
-    slackRequest.text = slackMessageBody;
+    const slackRequest = new SlackRequestFactory({
+      channel_id: channelCompleteSmsNumber,
+      user_name: operator.slackUserName,
+      text: slackMessageBody,
+    });
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
 
@@ -217,9 +221,11 @@ describe('services/SlackInbound', () => {
 
     const slackMessageBody = `+${contactUsername} ${messageBody}`;
 
-    slackRequest.channel_id = channelCompleteSmsNumber;
-    slackRequest.user_name = operator.slackUserName;
-    slackRequest.text = slackMessageBody;
+    const slackRequest = new SlackRequestFactory({
+      channel_id: channelCompleteSmsNumber,
+      user_name: operator.slackUserName,
+      text: slackMessageBody,
+    });
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber, username: contactUsername });
 
@@ -314,9 +320,11 @@ describe('services/SlackInbound', () => {
 
     const slackMessageBody = `+${contactUsername} ${messageBody}`;
 
-    slackRequest.channel_id = channelCompleteSmsNumber;
-    slackRequest.user_name = operator.slackUserName;
-    slackRequest.text = slackMessageBody;
+    const slackRequest = new SlackRequestFactory({
+      channel_id: channelCompleteSmsNumber,
+      user_name: operator.slackUserName,
+      text: slackMessageBody,
+    });
 
     const channels = {
       [channelCompleteSmsNumber]: {

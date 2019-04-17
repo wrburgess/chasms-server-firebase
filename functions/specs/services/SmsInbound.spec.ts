@@ -4,62 +4,37 @@ import * as sourceTypes from '../../src/constants/sourceTypes';
 import * as slackResponseTypes from '../../src/constants/slackResponseTypes';
 import * as authorTypes from '../../src/constants/authorTypes';
 import SmsInbound from '../../src/services/SmsInbound';
-import Operator from '../../src/models/Operator';
 import Message from '../../src/models/Message';
 import Contact from '../../src/models/Contact';
 import AutoId from '../../src/utilities/AutoId';
-import { ContactFactory, OperatorFactory, OrganizationFactory, slackRequest } from '../factories';
-
-// {
-//   ToCountry: 'US',
-//   MediaContentType0: 'image/jpeg',
-//   ToState: 'KS',
-//   SmsMessageSid: 'SMee78795cd6a2fbfcd3962c142ea604a3',
-//   NumMedia: '1',
-//   ToCity: '',
-//   FromZip: '60618',
-//   SmsSid: 'SMee78795cd6a2fbfcd3962c142ea604a3',
-//   FromState: 'IL',
-//   SmsStatus: 'received',
-//   FromCity: 'CHICAGO',
-//   Body: 'Test 01',
-//   FromCountry: 'US',
-//   To: '+19132988148',
-//   ToZip: '',
-//   NumSegments: '1',
-//   MessageSid: 'SMee78795cd6a2fbfcd3962c142ea604a3',
-//   AccountSid: 'AC777f98cc9160b995bbbd54844a5cc',
-//   From: '+17735516808',
-//   MediaUrl0: 'https://api.twilio.com/2010-04-01/Accounts/xxxxxxxxx/Messages/xxxxxxxxx/Media/xxxxxxxxx',
-//   ApiVersion: '2010-04-01'
-// }
+import { ContactFactory, OrganizationFactory, TwilioRequestFactory } from '../factories';
 
 describe('services/SmsInbound', () => {
-  it('renders the correct Message object from a Twilio request', () => {
+  it('renders the correct Message object from a Twilio request from known Contact', () => {
     const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const contactCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const messageBody = faker.lorem.sentence();
     const messageId = faker.random.uuid();
-    const slackMessageBody = `${contactCompleteSmsNumber} ${messageBody}`;
-    const operator = new OperatorFactory({});
 
-    slackRequest.channel_id = channelCompleteSmsNumber;
-    slackRequest.user_name = operator.slackUserName;
-    slackRequest.text = slackMessageBody;
+    const twilioRequest = new TwilioRequestFactory({
+      From: contactCompleteSmsNumber,
+      To: channelCompleteSmsNumber,
+      Body: messageBody,
+    });
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
+    const formattedMessageBody = `+${contact.username} (sms): ${messageBody}`;
 
     const channels = {
       [channelCompleteSmsNumber]: {
-        id: 'asdf',
-        name: 'asdf',
+        id: channelCompleteSmsNumber,
+        name: faker.internet.userName(),
         completeSmsNumber: channelCompleteSmsNumber,
         type: 'team',
-        slackChannelId: slackRequest.channel_id,
+        slackChannelId: faker.random.uuid(),
       },
     };
     const organization = new OrganizationFactory({
-      slackTeamId: slackRequest.team_id,
       twilioAccountPhoneNumber: channelCompleteSmsNumber,
       channels,
     });
@@ -69,27 +44,26 @@ describe('services/SmsInbound', () => {
     const message = {
       id: messageId,
       status: 200,
-      type: messageTypes.SLACK_INBOUND,
-      requestBody: slackRequest.text,
+      type: messageTypes.TWILIO_INBOUND,
+      requestBody: twilioRequest.Body,
       validRequest: true,
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: '',
+      smsInboundNumber: channelCompleteSmsNumber,
       source: {
-        type: sourceTypes.SLACK,
+        type: sourceTypes.TWILIO,
         meta: {
-          ...slackRequest,
+          ...twilioRequest,
         },
       },
       author: {
-        type: authorTypes.OPERATOR,
-        id: operator.id,
-        firstName: operator.firstName,
-        lastName: operator.lastName,
-        username: operator.username,
-        completeSmsNumber: operator.completeSmsNumber,
-        email: operator.email,
+        type: authorTypes.CONTACT,
+        id: contact.id,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        username: contact.username,
+        completeSmsNumber: contact.completeSmsNumber,
       },
       organization: {
         id: organization.id,
@@ -99,29 +73,30 @@ describe('services/SmsInbound', () => {
         status: true,
         id: channel.id,
         name: channel.name,
-        body: `+${contact.username} ${messageBody}`,
+        body: formattedMessageBody,
       },
       apiResponse: {
         status: false,
         body: '',
       },
       slackResponse: {
-        body: `+${contact.username} ${messageBody}`,
-        channel_id: slackRequest.channel_id,
+        body: formattedMessageBody,
+        channel_id: organization.slackChannelId,
         response_type: slackResponseTypes.IN_CHANNEL,
         status: true,
-        token: slackRequest.token,
+        token: organization.slackBotToken,
       },
       smsResponse: {
-        body: messageBody,
-        completeSmsNumber: contact.completeSmsNumber,
-        contact,
-        status: true,
+        body: '',
+        completeSmsNumber: '',
+        contact: {},
+        status: false,
+        twilioAccountPhoneNumber: channel.twilioAccountPhoneNumber,
+        twilioAuthToken: channel.twilioAuthToken,
+        twilioSid: channel.twilioSid,
       },
     };
 
-    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
-    asyncOperatorMock.mockResolvedValue(operator);
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
     const asyncContactMock: any = jest.spyOn(Contact, 'findByValOrCreate');
@@ -132,294 +107,203 @@ describe('services/SmsInbound', () => {
     return expect(SmsInbound.processRequest({ req: twilioRequest, organization })).resolves.toEqual(message);
   });
 
-  // it('renders the correct Message object from a Slack command with valid Command SMS Number', () => {
-  //   const contactCommandSmsNumber = faker.phone.phoneNumber('+##########');
-  //   const completeSmsNumber = `+1${contactCommandSmsNumber.substring(1)}`;
-  //   const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
-  //   const contactCompleteSmsNumber = completeSmsNumber;
-  //   const messageBody = faker.lorem.sentence();
-  //   const messageId = faker.random.uuid();
-  //   const operator = new OperatorFactory({});
+  it('renders the correct Message object from a Twilio request from new Contact', () => {
+    const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
+    const contactCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
+    const messageBody = faker.lorem.sentence();
+    const messageId = faker.random.uuid();
 
-  //   const slackMessageBody = `${contactCommandSmsNumber} ${messageBody}`;
+    const twilioRequest = new TwilioRequestFactory({
+      From: contactCompleteSmsNumber,
+      To: channelCompleteSmsNumber,
+      Body: messageBody,
+    });
 
-  //   slackRequest.channel_id = channelCompleteSmsNumber;
-  //   slackRequest.user_name = operator.slackUserName;
-  //   slackRequest.text = slackMessageBody;
+    const contact = new ContactFactory({
+      completeSmsNumber: contactCompleteSmsNumber,
+      firstName: '',
+      lastName: '',
+      username: '',
+    });
 
-  //   const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
+    const formattedMessageBody = `${contact.completeSmsNumber} (sms): ${messageBody}`;
 
-  //   const channels = {
-  //     [channelCompleteSmsNumber]: {
-  //       id: 'asdf',
-  //       name: 'asdf',
-  //       completeSmsNumber: channelCompleteSmsNumber,
-  //       type: 'team',
-  //       slackChannelId: slackRequest.channel_id,
-  //     },
-  //   };
-  //   const organization = new OrganizationFactory({
-  //     slackTeamId: slackRequest.team_id,
-  //     twilioAccountPhoneNumber: channelCompleteSmsNumber,
-  //     channels,
-  //   });
-  //   const channel = organization.channels[channelCompleteSmsNumber];
+    const channels = {
+      [channelCompleteSmsNumber]: {
+        id: channelCompleteSmsNumber,
+        name: faker.internet.userName(),
+        completeSmsNumber: channelCompleteSmsNumber,
+        type: 'team',
+        slackChannelId: faker.random.uuid(),
+      },
+    };
+    const organization = new OrganizationFactory({
+      twilioAccountPhoneNumber: channelCompleteSmsNumber,
+      channels,
+    });
 
-  //   const message = {
-  //     id: messageId,
-  //     status: 200,
-  //     type: messageTypes.SLACK_INBOUND,
-  //     requestBody: slackRequest.text,
-  //     validRequest: true,
-  //     archived: false,
-  //     attachments: [],
-  //     tags: [],
-  //     smsInboundNumber: '',
-  //     source: {
-  //       type: sourceTypes.SLACK,
-  //       meta: {
-  //         ...slackRequest,
-  //       },
-  //     },
-  //     author: {
-  //       type: authorTypes.OPERATOR,
-  //       id: operator.id,
-  //       firstName: operator.firstName,
-  //       lastName: operator.lastName,
-  //       username: operator.username,
-  //       completeSmsNumber: operator.completeSmsNumber,
-  //       email: operator.email,
-  //     },
-  //     organization: {
-  //       id: organization.id,
-  //       name: organization.name,
-  //     },
-  //     channelResponse: {
-  //       status: true,
-  //       id: channel.id,
-  //       name: channel.name,
-  //       body: `+${contact.username} ${messageBody}`,
-  //     },
-  //     apiResponse: {
-  //       status: false,
-  //       body: '',
-  //     },
-  //     slackResponse: {
-  //       body: `+${contact.username} ${messageBody}`,
-  //       channel_id: slackRequest.channel_id,
-  //       response_type: slackResponseTypes.IN_CHANNEL,
-  //       status: true,
-  //       token: slackRequest.token,
-  //     },
-  //     smsResponse: {
-  //       body: messageBody,
-  //       completeSmsNumber: contact.completeSmsNumber,
-  //       contact,
-  //       status: true,
-  //     },
-  //   };
+    const channel = organization.channels[channelCompleteSmsNumber];
 
-  //   const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
-  //   asyncOperatorMock.mockResolvedValue(operator);
-  //   const asyncMessageMock: any = jest.spyOn(Message, 'create');
-  //   asyncMessageMock.mockResolvedValue(message);
-  //   const asyncContactMock: any = jest.spyOn(Contact, 'findByValOrCreate');
-  //   asyncContactMock.mockResolvedValue(contact);
-  //   const AutoIdMock: any = jest.spyOn(AutoId, 'newId');
-  //   AutoIdMock.mockImplementation(() => messageId);
+    const message = {
+      id: messageId,
+      status: 200,
+      type: messageTypes.TWILIO_INBOUND,
+      requestBody: twilioRequest.Body,
+      validRequest: true,
+      archived: false,
+      attachments: [],
+      tags: [],
+      smsInboundNumber: channelCompleteSmsNumber,
+      source: {
+        type: sourceTypes.TWILIO,
+        meta: {
+          ...twilioRequest,
+        },
+      },
+      author: {
+        type: authorTypes.CONTACT,
+        id: contact.id,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        username: contact.username,
+        completeSmsNumber: contact.completeSmsNumber,
+      },
+      organization: {
+        id: organization.id,
+        name: organization.name,
+      },
+      channelResponse: {
+        status: true,
+        id: channel.id,
+        name: channel.name,
+        body: formattedMessageBody,
+      },
+      apiResponse: {
+        status: false,
+        body: '',
+      },
+      slackResponse: {
+        body: formattedMessageBody,
+        channel_id: organization.slackChannelId,
+        response_type: slackResponseTypes.IN_CHANNEL,
+        status: true,
+        token: organization.slackBotToken,
+      },
+      smsResponse: {
+        body: '',
+        completeSmsNumber: '',
+        contact: {},
+        status: false,
+      },
+    };
 
-  //   return expect(SlackInbound.processMessage({ req: slackRequest, organization })).resolves.toEqual(message);
-  // });
+    const asyncMessageMock: any = jest.spyOn(Message, 'create');
+    asyncMessageMock.mockResolvedValue(message);
+    const asyncContactMock: any = jest.spyOn(Contact, 'findByValOrCreate');
+    asyncContactMock.mockResolvedValue(contact);
+    const AutoIdMock: any = jest.spyOn(AutoId, 'newId');
+    AutoIdMock.mockImplementation(() => messageId);
 
-  // it('renders the correct Message object from a Slack command with valid Contact Username', () => {
-  //   const contactCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
-  //   const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
-  //   const contactUsername = faker.internet.userName();
-  //   const messageBody = faker.lorem.sentence();
-  //   const messageId = faker.random.uuid();
-  //   const operator = new OperatorFactory({});
+    return expect(SmsInbound.processRequest({ req: twilioRequest, organization })).resolves.toEqual(message);
+  });
 
-  //   const slackMessageBody = `+${contactUsername} ${messageBody}`;
+  it('renders the correct Message object from a Twilio request for Organization without Slack', () => {
+    const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
+    const contactCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
+    const messageBody = faker.lorem.sentence();
+    const messageId = faker.random.uuid();
 
-  //   slackRequest.channel_id = channelCompleteSmsNumber;
-  //   slackRequest.user_name = operator.slackUserName;
-  //   slackRequest.text = slackMessageBody;
+    const twilioRequest = new TwilioRequestFactory({
+      From: contactCompleteSmsNumber,
+      To: channelCompleteSmsNumber,
+      Body: messageBody,
+    });
 
-  //   const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber, username: contactUsername });
+    const contact = new ContactFactory({
+      completeSmsNumber: contactCompleteSmsNumber,
+      firstName: '',
+      lastName: '',
+      username: '',
+    });
 
-  //   const channels = {
-  //     [channelCompleteSmsNumber]: {
-  //       id: 'asdf',
-  //       name: 'asdf',
-  //       completeSmsNumber: channelCompleteSmsNumber,
-  //       type: 'team',
-  //       slackChannelId: slackRequest.channel_id,
-  //     },
-  //   };
-  //   const organization = new OrganizationFactory({
-  //     slackTeamId: slackRequest.team_id,
-  //     twilioAccountPhoneNumber: channelCompleteSmsNumber,
-  //     channels,
-  //   });
-  //   const channel = organization.channels[channelCompleteSmsNumber];
+    const formattedMessageBody = `${contact.completeSmsNumber} (sms): ${messageBody}`;
 
-  //   const message = {
-  //     id: messageId,
-  //     status: 200,
-  //     type: messageTypes.SLACK_INBOUND,
-  //     requestBody: slackRequest.text,
-  //     validRequest: true,
-  //     archived: false,
-  //     attachments: [],
-  //     tags: [],
-  //     smsInboundNumber: '',
-  //     source: {
-  //       type: sourceTypes.SLACK,
-  //       meta: {
-  //         ...slackRequest,
-  //       },
-  //     },
-  //     author: {
-  //       type: authorTypes.OPERATOR,
-  //       id: operator.id,
-  //       firstName: operator.firstName,
-  //       lastName: operator.lastName,
-  //       username: operator.username,
-  //       completeSmsNumber: operator.completeSmsNumber,
-  //       email: operator.email,
-  //     },
-  //     organization: {
-  //       id: organization.id,
-  //       name: organization.name,
-  //     },
-  //     channelResponse: {
-  //       status: true,
-  //       id: channel.id,
-  //       name: channel.name,
-  //       body: `+${contact.username} ${messageBody}`,
-  //     },
-  //     apiResponse: {
-  //       status: false,
-  //       body: '',
-  //     },
-  //     slackResponse: {
-  //       body: `+${contact.username} ${messageBody}`,
-  //       channel_id: slackRequest.channel_id,
-  //       response_type: slackResponseTypes.IN_CHANNEL,
-  //       status: true,
-  //       token: slackRequest.token,
-  //     },
-  //     smsResponse: {
-  //       body: messageBody,
-  //       completeSmsNumber: contact.completeSmsNumber,
-  //       contact,
-  //       status: true,
-  //     },
-  //   };
+    const channels = {
+      [channelCompleteSmsNumber]: {
+        id: channelCompleteSmsNumber,
+        name: faker.internet.userName(),
+        completeSmsNumber: channelCompleteSmsNumber,
+        type: 'team',
+      },
+    };
+    const organization = new OrganizationFactory({
+      usesSlack: false,
+      twilioAccountPhoneNumber: channelCompleteSmsNumber,
+      channels,
+    });
 
-  //   const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
-  //   asyncOperatorMock.mockResolvedValue(operator);
-  //   const asyncMessageMock: any = jest.spyOn(Message, 'create');
-  //   asyncMessageMock.mockResolvedValue(message);
-  //   const asyncContactMock: any = jest.spyOn(Contact, 'findByVal');
-  //   asyncContactMock.mockResolvedValue(contact);
-  //   const AutoIdMock: any = jest.spyOn(AutoId, 'newId');
-  //   AutoIdMock.mockImplementation(() => messageId);
+    const channel = organization.channels[channelCompleteSmsNumber];
 
-  //   return expect(SlackInbound.processMessage({ req: slackRequest, organization })).resolves.toEqual(message);
-  // });
+    const message = {
+      id: messageId,
+      status: 200,
+      type: messageTypes.TWILIO_INBOUND,
+      requestBody: twilioRequest.Body,
+      validRequest: true,
+      archived: false,
+      attachments: [],
+      tags: [],
+      smsInboundNumber: channelCompleteSmsNumber,
+      source: {
+        type: sourceTypes.TWILIO,
+        meta: {
+          ...twilioRequest,
+        },
+      },
+      author: {
+        type: authorTypes.CONTACT,
+        id: contact.id,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        username: contact.username,
+        completeSmsNumber: contact.completeSmsNumber,
+      },
+      organization: {
+        id: organization.id,
+        name: organization.name,
+      },
+      channelResponse: {
+        status: true,
+        id: channel.id,
+        name: channel.name,
+        body: formattedMessageBody,
+      },
+      apiResponse: {
+        status: false,
+        body: '',
+      },
+      slackResponse: {
+        body: '',
+        channel_id: '',
+        response_type: '',
+        status: false,
+        token: '',
+      },
+      smsResponse: {
+        body: '',
+        completeSmsNumber: '',
+        contact: {},
+        status: false,
+      },
+    };
 
-  // it('renders the correct Message object from a Slack command with an invalid Contact Username', () => {
-  //   const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
-  //   const contactUsername = faker.internet.userName();
-  //   const messageBody = faker.lorem.sentence();
-  //   const messageId = faker.random.uuid();
-  //   const operator = new OperatorFactory({});
+    const asyncMessageMock: any = jest.spyOn(Message, 'create');
+    asyncMessageMock.mockResolvedValue(message);
+    const asyncContactMock: any = jest.spyOn(Contact, 'findByValOrCreate');
+    asyncContactMock.mockResolvedValue(contact);
+    const AutoIdMock: any = jest.spyOn(AutoId, 'newId');
+    AutoIdMock.mockImplementation(() => messageId);
 
-  //   const slackMessageBody = `+${contactUsername} ${messageBody}`;
-
-  //   slackRequest.channel_id = channelCompleteSmsNumber;
-  //   slackRequest.user_name = operator.slackUserName;
-  //   slackRequest.text = slackMessageBody;
-
-  //   const channels = {
-  //     [channelCompleteSmsNumber]: {
-  //       id: 'asdf',
-  //       name: 'asdf',
-  //       completeSmsNumber: channelCompleteSmsNumber,
-  //       type: 'team',
-  //       slackChannelId: slackRequest.channel_id,
-  //     },
-  //   };
-  //   const organization = new OrganizationFactory({
-  //     slackTeamId: slackRequest.team_id,
-  //     twilioAccountPhoneNumber: channelCompleteSmsNumber,
-  //     channels,
-  //   });
-
-  //   const message = {
-  //     id: messageId,
-  //     status: 200,
-  //     type: messageTypes.SLACK_INBOUND,
-  //     requestBody: slackRequest.text,
-  //     validRequest: true,
-  //     archived: false,
-  //     attachments: [],
-  //     tags: [],
-  //     smsInboundNumber: '',
-  //     source: {
-  //       type: sourceTypes.SLACK,
-  //       meta: {
-  //         ...slackRequest,
-  //       },
-  //     },
-  //     author: {
-  //       type: authorTypes.OPERATOR,
-  //       id: operator.id,
-  //       firstName: operator.firstName,
-  //       lastName: operator.lastName,
-  //       username: operator.username,
-  //       completeSmsNumber: operator.completeSmsNumber,
-  //       email: operator.email,
-  //     },
-  //     organization: {
-  //       id: organization.id,
-  //       name: organization.name,
-  //     },
-  //     channelResponse: {
-  //       status: false,
-  //       id: '',
-  //       name: '',
-  //       body: '',
-  //     },
-  //     apiResponse: {
-  //       status: false,
-  //       body: '',
-  //     },
-  //     slackResponse: {
-  //       body: `Unknown username for command: +${contactUsername} ${messageBody}`,
-  //       channel_id: slackRequest.channel_id,
-  //       response_type: slackResponseTypes.EPHEMERAL,
-  //       status: true,
-  //       token: slackRequest.token,
-  //     },
-  //     smsResponse: {
-  //       body: '',
-  //       completeSmsNumber: '',
-  //       contact: {},
-  //       status: false,
-  //     },
-  //   };
-
-  //   const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
-  //   asyncOperatorMock.mockResolvedValue(operator);
-  //   const asyncMessageMock: any = jest.spyOn(Message, 'create');
-  //   asyncMessageMock.mockResolvedValue(message);
-  //   const asyncContactMock: any = jest.spyOn(Contact, 'findByVal');
-  //   asyncContactMock.mockResolvedValue({});
-  //   const AutoIdMock: any = jest.spyOn(AutoId, 'newId');
-  //   AutoIdMock.mockImplementation(() => messageId);
-
-  //   return expect(SlackInbound.processMessage({ req: slackRequest, organization })).resolves.toEqual(message);
-  // });
+    return expect(SmsInbound.processRequest({ req: twilioRequest, organization })).resolves.toEqual(message);
+  });
 });
