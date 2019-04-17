@@ -8,7 +8,7 @@ import Operator from '../../src/models/Operator';
 import Message from '../../src/models/Message';
 import Contact from '../../src/models/Contact';
 import AutoId from '../../src/utilities/AutoId';
-import { ContactFactory, OperatorFactory, organization, slackRequest } from '../factories';
+import { ContactFactory, OperatorFactory, OrganizationFactory, slackRequest } from '../factories';
 
 describe('services/SlackInbound', () => {
   it('renders the correct Message object from a Slack command with valid Complete SMS Number', () => {
@@ -25,9 +25,7 @@ describe('services/SlackInbound', () => {
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
 
-    organization.slackTeamId = slackRequest.team_id;
-    organization.twilioAccountPhoneNumber = channelCompleteSmsNumber;
-    organization.channels = {
+    const channels = {
       [channelCompleteSmsNumber]: {
         id: 'asdf',
         name: 'asdf',
@@ -36,6 +34,11 @@ describe('services/SlackInbound', () => {
         slackChannelId: slackRequest.channel_id,
       },
     };
+    const organization = new OrganizationFactory({
+      slackTeamId: slackRequest.team_id,
+      twilioAccountPhoneNumber: channelCompleteSmsNumber,
+      channels,
+    });
 
     const channel = organization.channels[channelCompleteSmsNumber];
 
@@ -122,9 +125,7 @@ describe('services/SlackInbound', () => {
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
 
-    organization.slackTeamId = slackRequest.team_id;
-    organization.twilioAccountPhoneNumber = channelCompleteSmsNumber;
-    organization.channels = {
+    const channels = {
       [channelCompleteSmsNumber]: {
         id: 'asdf',
         name: 'asdf',
@@ -133,7 +134,11 @@ describe('services/SlackInbound', () => {
         slackChannelId: slackRequest.channel_id,
       },
     };
-
+    const organization = new OrganizationFactory({
+      slackTeamId: slackRequest.team_id,
+      twilioAccountPhoneNumber: channelCompleteSmsNumber,
+      channels,
+    });
     const channel = organization.channels[channelCompleteSmsNumber];
 
     const message = {
@@ -218,9 +223,7 @@ describe('services/SlackInbound', () => {
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber, username: contactUsername });
 
-    organization.slackTeamId = slackRequest.team_id;
-    organization.twilioAccountPhoneNumber = channelCompleteSmsNumber;
-    organization.channels = {
+    const channels = {
       [channelCompleteSmsNumber]: {
         id: 'asdf',
         name: 'asdf',
@@ -229,7 +232,11 @@ describe('services/SlackInbound', () => {
         slackChannelId: slackRequest.channel_id,
       },
     };
-
+    const organization = new OrganizationFactory({
+      slackTeamId: slackRequest.team_id,
+      twilioAccountPhoneNumber: channelCompleteSmsNumber,
+      channels,
+    });
     const channel = organization.channels[channelCompleteSmsNumber];
 
     const message = {
@@ -311,9 +318,7 @@ describe('services/SlackInbound', () => {
     slackRequest.user_name = operator.slackUserName;
     slackRequest.text = slackMessageBody;
 
-    organization.slackTeamId = slackRequest.team_id;
-    organization.twilioAccountPhoneNumber = channelCompleteSmsNumber;
-    organization.channels = {
+    const channels = {
       [channelCompleteSmsNumber]: {
         id: 'asdf',
         name: 'asdf',
@@ -322,6 +327,11 @@ describe('services/SlackInbound', () => {
         slackChannelId: slackRequest.channel_id,
       },
     };
+    const organization = new OrganizationFactory({
+      slackTeamId: slackRequest.team_id,
+      twilioAccountPhoneNumber: channelCompleteSmsNumber,
+      channels,
+    });
 
     const message = {
       id: messageId,

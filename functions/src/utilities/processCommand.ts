@@ -15,8 +15,6 @@ const processCommand: any = async function({ command, organization }) {
   let type: string = '';
   let errorMessage: string = 'Valid command';
   let contact: any = {};
-  console.log('command', command);
-  console.log('leadingUsername.test(command)', leadingUsername.test(command));
 
   if (completeSmsNumberAndText.test(command)) {
     completeSmsNumber = extractCompleteSmsNumber(command);
@@ -41,7 +39,7 @@ const processCommand: any = async function({ command, organization }) {
     messageBody = extractMessageFromCommand(command);
     contact = await Contact.findByVal({ organizationId: organization.id, field: 'username', val: username });
 
-    if (contact.id) {
+    if (contact && contact.id) {
       type = commandTypes.OUTBOUND_SMS;
       completeSmsNumber = contact.completeSmsNumber;
     } else {
