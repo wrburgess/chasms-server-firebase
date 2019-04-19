@@ -27,7 +27,12 @@ class SlackInbound {
   static async processMessage({ req, organization }) {
     const command: any = await processCommand({ command: req.text, organization });
     const channel: any = Organization.channelFindByVal({ organization, field: 'slackChannelId', val: req.channel_id });
-    let operator: any = await Operator.findByVal({ organization, field: 'slackUserName', val: req.user_name });
+    let operator: any = await Operator.findByValOrCreate({
+      organizationId: organization.id,
+      field: 'slackUserName',
+      val: req.user_name,
+    });
+
     let contact: any = command.contact;
 
     let smsResponse: any = {};

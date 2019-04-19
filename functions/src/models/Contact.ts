@@ -15,7 +15,7 @@ class Contact {
         .doc(id);
 
       await docRef.set({
-        id: id,
+        id,
         firstName: '',
         lastName: '',
         username: '',
@@ -128,7 +128,7 @@ class Contact {
 
         return data[0];
       } else {
-        return await Contact.create({ organizationId, completeSmsNumber: val });
+        return await Contact.create({ organizationId, [field]: val });
       }
     } catch (err) {
       console.error('User > findByVal: ', err);
