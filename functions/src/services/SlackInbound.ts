@@ -62,19 +62,27 @@ class SlackInbound {
     let slackResponse: any = {};
     if (channel.usesSlack && command.type !== commandTypes.INVALID) {
       slackResponse = {
-        body: `+${contact.username} ${command.messageBody}`,
-        channel_id: req.channel_id,
+        as_user: false,
+        attachments: [],
+        channel: req.channel_id,
+        link_names: true,
         response_type: slackResponseTypes.IN_CHANNEL,
         status: true,
+        text: `+${contact.username} ${command.messageBody}`,
         token: req.token,
+        user: '',
       };
     } else if (channel.usesSlack && command.type === commandTypes.INVALID) {
       slackResponse = {
-        body: `Unknown username for command: ${req.text}`,
-        channel_id: req.channel_id,
+        as_user: false,
+        attachments: [],
+        channel: req.channel_id,
+        link_names: true,
         response_type: slackResponseTypes.EPHEMERAL,
         status: true,
+        text: `Unknown username for command: ${req.text}`,
         token: req.token,
+        user: req.user_id,
       };
     }
 
@@ -138,9 +146,9 @@ class SlackInbound {
       },
     };
 
+    // console.log('message', message);
     Message.create(message);
 
-    // console.log('message', message);
     return message;
   }
 }

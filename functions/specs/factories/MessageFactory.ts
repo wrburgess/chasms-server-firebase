@@ -61,11 +61,15 @@ class MessageFactory {
       body: '',
     },
     slackResponse = {
-      body: `+${contactUsername} ${messageBody}`,
-      channel_id: faker.internet.userName(),
+      as_user: false,
+      attachments: [],
+      channel: faker.internet.userName(),
+      link_names: true,
       response_type: slackResponseTypes.IN_CHANNEL,
       status: true,
+      text: `+${contactUsername} ${messageBody}`,
       token: faker.random.uuid(),
+      user: faker.random.uuid(),
     },
     smsResponse = {
       body: messageBody,

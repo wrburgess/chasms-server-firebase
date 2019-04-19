@@ -1,10 +1,9 @@
 import * as Twilio from 'twilio';
 
 class SmsOutbound {
-  static async sendMessage(message: any) {
+  static async sendMessage(smsResponse: any) {
     try {
-      const { body, contact, twilioAccountPhoneNumber, twilioAuthToken, twilioSid } = message.smsResponse;
-
+      const { body, contact, twilioAccountPhoneNumber, twilioAuthToken, twilioSid } = smsResponse;
       const twilio = Twilio(twilioSid, twilioAuthToken);
 
       const message = {

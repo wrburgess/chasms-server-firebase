@@ -41,19 +41,27 @@ class SmsInbound {
     let slackResponse = {};
     if (channel.usesSlack) {
       slackResponse = {
-        body: formattedMessageBody,
-        channel_id: channel.slackChannelId,
+        as_user: false,
+        attachments,
+        channel: channel.slackChannelId,
+        link_names: true,
         response_type: slackResponseTypes.IN_CHANNEL,
         status: true,
+        text: formattedMessageBody,
         token: channel.slackBotToken,
+        user: '',
       };
     } else {
       slackResponse = {
-        body: '',
-        channel_id: '',
+        as_user: false,
+        attachments: [],
+        channel: '',
+        link_names: true,
         response_type: '',
         status: false,
+        text: '',
         token: '',
+        user: '',
       };
     }
 

@@ -9,14 +9,14 @@ export const onMessageCreate = functions.firestore
     const message = documentSnapshot.data();
 
     if (message && message.smsResponse.status) {
-      SmsOutbound.sendMessage(message);
+      SmsOutbound.sendMessage(message.smsResponse);
     }
 
     if (message && message.slackResponse.status) {
       if (message.response_type === slackResponseTypes.EPHEMERAL) {
-        SlackOutbound.sendEphemeralMessage(message);
+        SlackOutbound.sendEphemeralMessage(message.slackResponse);
       } else if (message.response_type === slackResponseTypes.IN_CHANNEL) {
-        SlackOutbound.sendPublicMessage(message);
+        SlackOutbound.sendPublicMessage(message.slackResponse);
       }
     }
   });
