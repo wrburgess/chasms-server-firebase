@@ -1,22 +1,25 @@
 import * as admin from 'firebase-admin';
 import { ORGANIZATIONS, CONTACTS } from '../constants/models';
+import AutoId from '../utilities/AutoId';
 
 class Contact {
-  static async create(attrs) {
+  static async create(attrs: any) {
     try {
+      const id = AutoId.newId();
+
       const docRef = admin
         .firestore()
         .collection(ORGANIZATIONS)
         .doc(attrs.organizationId)
         .collection(CONTACTS)
-        .doc(attrs.smsNumber);
+        .doc(id);
 
       await docRef.set({
-        id: attrs.smsNumber,
+        id: id,
         firstName: '',
         lastName: '',
         username: '',
-        completeSmsNumber: attrs.smsNumber,
+        completeSmsNumber: '',
         email: '',
         ...attrs,
         created_at: admin.firestore.FieldValue.serverTimestamp(),
@@ -125,7 +128,7 @@ class Contact {
 
         return data[0];
       } else {
-        return await Contact.create({ organizationId, id: val, completeSmsNumber: val });
+        return await Contact.create({ organizationId, completeSmsNumber: val });
       }
     } catch (err) {
       console.error('User > findByVal: ', err);

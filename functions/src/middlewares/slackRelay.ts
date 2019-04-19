@@ -5,12 +5,16 @@ const slackRelay = async (req, _, next) => {
   try {
     const { channel_id } = req.body;
     const organization: any = await Organization.findBySlackChannelId(channel_id);
+    console.log('channel_id:', channel_id);
+    console.log('organization:', organization);
 
     const channel = Organization.channelFindByVal({
       organization,
       field: 'slackChannelID',
       val: channel_id,
     });
+
+    console.log('channel:', channel);
 
     if (organization && channel && channel.usesSlack) {
       SlackInbound.processMessage({ req: req.body, organization });

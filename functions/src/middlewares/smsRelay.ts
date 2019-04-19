@@ -3,13 +3,16 @@ import Organization from '../models/Organization';
 
 const smsRelay = async (req, _, next) => {
   try {
-    const { AccountSid, To } = req.body;
-    const organization: any = await Organization.findByVal({
-      field: 'twilioSid',
-      val: AccountSid,
+    const { To } = req.body;
+    const organization: any = await Organization.findByTwilioAccountPhoneNumber(To);
+
+    const channel = Organization.channelFindByVal({
+      organization,
+      field: 'twilioAccountPhoneNumber',
+      val: To,
     });
 
-    if (organization && organization.channels[To]) {
+    if (organization && channel && channel.usesTwilio) {
       req.chasms = await SmsInbound.processRequest({ req: req.body, organization });
       next();
     } else {

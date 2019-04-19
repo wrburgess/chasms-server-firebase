@@ -13,9 +13,10 @@ class SmsInbound {
     let formattedMessageBody: string = '';
 
     const channel: any = Organization.channelFindByVal({ organization, field: 'twilioAccountPhoneNumber', val: To });
+
     const contact: any = await Contact.findByValOrCreate({
       organizationId: organization.id,
-      field: 'completeSmsPhoneNumber',
+      field: 'completeSmsNumber',
       val: From,
     });
 

@@ -1,22 +1,10 @@
 import * as functions from 'firebase-functions';
-import SlackOutbound from '../services/SlackOutbound';
-import SmsOutbound from '../services/SmsOutbound';
-import * as slackResponseTypes from '../constants/slackResponseTypes';
+import Distribution from '../services/Distribution';
 
 export const onMessageCreate = functions.firestore
   .document('organizations/{organizationId}/messages/{messageId}')
-  .onCreate((documentSnapshot, context) => {
-    const message = documentSnapshot.data();
+  .onCreate(async documentSnapshot => {
+    const message = await documentSnapshot.data();
 
-    if (message && message.smsResponse.status) {
-      SmsOutbound.sendMessage(message.smsResponse);
-    }
-
-    if (message && message.slackResponse.status) {
-      if (message.response_type === slackResponseTypes.EPHEMERAL) {
-        SlackOutbound.sendEphemeralMessage(message.slackResponse);
-      } else if (message.response_type === slackResponseTypes.IN_CHANNEL) {
-        SlackOutbound.sendPublicMessage(message.slackResponse);
-      }
-    }
+    Distribution.processMessage(message);
   });

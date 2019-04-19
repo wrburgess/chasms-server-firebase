@@ -9,13 +9,15 @@ class SlackOutbound {
         headers: { Authorization: `Bearer ${slackResponse.token}` },
       };
 
-      axios.post(
+      const response = await axios.post(
         SLACK_PUBLIC_MESSAGE_URI,
         {
           ...slackResponse,
         },
         config,
       );
+
+      console.log('axios response', response);
     } catch (err) {
       console.error('SlackOutbound > sendPublicMessage: ', err);
     }
