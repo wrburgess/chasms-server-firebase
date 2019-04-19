@@ -7,7 +7,13 @@ import SmsInbound from '../../src/services/SmsInbound';
 import Message from '../../src/models/Message';
 import Contact from '../../src/models/Contact';
 import AutoId from '../../src/utilities/AutoId';
-import { ContactFactory, OrganizationFactory, TwilioRequestFactory } from '../factories';
+import {
+  ChannelFactory,
+  ContactFactory,
+  MessageFactory,
+  OrganizationFactory,
+  TwilioRequestFactory,
+} from '../factories';
 
 describe('services/SmsInbound', () => {
   it('renders the correct Message object from a Twilio request from known Contact', () => {
@@ -25,23 +31,15 @@ describe('services/SmsInbound', () => {
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
     const formattedMessageBody = `+${contact.username} (sms): ${messageBody}`;
 
-    const channels = {
-      [channelCompleteSmsNumber]: {
-        id: channelCompleteSmsNumber,
-        name: faker.internet.userName(),
-        completeSmsNumber: channelCompleteSmsNumber,
-        type: 'team',
-        slackChannelId: faker.random.uuid(),
-      },
-    };
-    const organization = new OrganizationFactory({
+    const organization = new OrganizationFactory({});
+
+    const channel = new ChannelFactory({
       twilioAccountPhoneNumber: channelCompleteSmsNumber,
-      channels,
     });
 
-    const channel = organization.channels[channelCompleteSmsNumber];
+    organization.channels[channel.id] = channel;
 
-    const message = {
+    const message = new MessageFactory({
       id: messageId,
       status: 200,
       type: messageTypes.TWILIO_INBOUND,
@@ -50,7 +48,6 @@ describe('services/SmsInbound', () => {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: channelCompleteSmsNumber,
       source: {
         type: sourceTypes.TWILIO,
         meta: {
@@ -58,22 +55,23 @@ describe('services/SmsInbound', () => {
         },
       },
       author: {
-        type: authorTypes.CONTACT,
-        id: contact.id,
-        firstName: contact.firstName,
-        lastName: contact.lastName,
-        username: contact.username,
         completeSmsNumber: contact.completeSmsNumber,
+        email: '',
+        firstName: contact.firstName,
+        id: contact.id,
+        lastName: contact.lastName,
+        type: authorTypes.CONTACT,
+        username: contact.username,
       },
       organization: {
         id: organization.id,
         name: organization.name,
       },
       channelResponse: {
-        status: true,
+        body: formattedMessageBody,
         id: channel.id,
         name: channel.name,
-        body: formattedMessageBody,
+        status: true,
       },
       apiResponse: {
         status: false,
@@ -81,21 +79,26 @@ describe('services/SmsInbound', () => {
       },
       slackResponse: {
         body: formattedMessageBody,
-        channel_id: organization.slackChannelId,
+        channel_id: channel.slackChannelId,
         response_type: slackResponseTypes.IN_CHANNEL,
         status: true,
-        token: organization.slackBotToken,
+        token: channel.slackBotToken,
       },
       smsResponse: {
         body: '',
-        completeSmsNumber: '',
-        contact: {},
+        contact: {
+          id: '',
+          firstName: '',
+          lastName: '',
+          completeSmsNumber: '',
+          username: '',
+        },
         status: false,
-        twilioAccountPhoneNumber: channel.twilioAccountPhoneNumber,
-        twilioAuthToken: channel.twilioAuthToken,
-        twilioSid: channel.twilioSid,
+        twilioAccountPhoneNumber: '',
+        twilioAuthToken: '',
+        twilioSid: '',
       },
-    };
+    });
 
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
@@ -128,23 +131,15 @@ describe('services/SmsInbound', () => {
 
     const formattedMessageBody = `${contact.completeSmsNumber} (sms): ${messageBody}`;
 
-    const channels = {
-      [channelCompleteSmsNumber]: {
-        id: channelCompleteSmsNumber,
-        name: faker.internet.userName(),
-        completeSmsNumber: channelCompleteSmsNumber,
-        type: 'team',
-        slackChannelId: faker.random.uuid(),
-      },
-    };
-    const organization = new OrganizationFactory({
+    const organization = new OrganizationFactory({});
+
+    const channel = new ChannelFactory({
       twilioAccountPhoneNumber: channelCompleteSmsNumber,
-      channels,
     });
 
-    const channel = organization.channels[channelCompleteSmsNumber];
+    organization.channels[channel.id] = channel;
 
-    const message = {
+    const message = new MessageFactory({
       id: messageId,
       status: 200,
       type: messageTypes.TWILIO_INBOUND,
@@ -153,7 +148,6 @@ describe('services/SmsInbound', () => {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: channelCompleteSmsNumber,
       source: {
         type: sourceTypes.TWILIO,
         meta: {
@@ -167,6 +161,7 @@ describe('services/SmsInbound', () => {
         lastName: contact.lastName,
         username: contact.username,
         completeSmsNumber: contact.completeSmsNumber,
+        email: '',
       },
       organization: {
         id: organization.id,
@@ -184,18 +179,26 @@ describe('services/SmsInbound', () => {
       },
       slackResponse: {
         body: formattedMessageBody,
-        channel_id: organization.slackChannelId,
+        channel_id: channel.slackChannelId,
         response_type: slackResponseTypes.IN_CHANNEL,
         status: true,
-        token: organization.slackBotToken,
+        token: channel.slackBotToken,
       },
       smsResponse: {
         body: '',
-        completeSmsNumber: '',
-        contact: {},
+        contact: {
+          id: '',
+          firstName: '',
+          lastName: '',
+          completeSmsNumber: '',
+          username: '',
+        },
         status: false,
+        twilioAccountPhoneNumber: '',
+        twilioAuthToken: '',
+        twilioSid: '',
       },
-    };
+    });
 
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
@@ -228,23 +231,16 @@ describe('services/SmsInbound', () => {
 
     const formattedMessageBody = `${contact.completeSmsNumber} (sms): ${messageBody}`;
 
-    const channels = {
-      [channelCompleteSmsNumber]: {
-        id: channelCompleteSmsNumber,
-        name: faker.internet.userName(),
-        completeSmsNumber: channelCompleteSmsNumber,
-        type: 'team',
-      },
-    };
-    const organization = new OrganizationFactory({
-      usesSlack: false,
+    const organization = new OrganizationFactory({});
+
+    const channel = new ChannelFactory({
       twilioAccountPhoneNumber: channelCompleteSmsNumber,
-      channels,
+      usesSlack: false,
     });
 
-    const channel = organization.channels[channelCompleteSmsNumber];
+    organization.channels[channel.id] = channel;
 
-    const message = {
+    const message = new MessageFactory({
       id: messageId,
       status: 200,
       type: messageTypes.TWILIO_INBOUND,
@@ -253,7 +249,6 @@ describe('services/SmsInbound', () => {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: channelCompleteSmsNumber,
       source: {
         type: sourceTypes.TWILIO,
         meta: {
@@ -267,6 +262,7 @@ describe('services/SmsInbound', () => {
         lastName: contact.lastName,
         username: contact.username,
         completeSmsNumber: contact.completeSmsNumber,
+        email: '',
       },
       organization: {
         id: organization.id,
@@ -291,11 +287,19 @@ describe('services/SmsInbound', () => {
       },
       smsResponse: {
         body: '',
-        completeSmsNumber: '',
-        contact: {},
+        contact: {
+          id: '',
+          firstName: '',
+          lastName: '',
+          completeSmsNumber: '',
+          username: '',
+        },
         status: false,
+        twilioAccountPhoneNumber: '',
+        twilioAuthToken: '',
+        twilioSid: '',
       },
-    };
+    });
 
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);

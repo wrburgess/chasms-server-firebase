@@ -8,43 +8,42 @@ import Operator from '../../src/models/Operator';
 import Message from '../../src/models/Message';
 import Contact from '../../src/models/Contact';
 import AutoId from '../../src/utilities/AutoId';
-import { ContactFactory, OperatorFactory, OrganizationFactory, SlackRequestFactory } from '../factories';
+import {
+  ChannelFactory,
+  ContactFactory,
+  MessageFactory,
+  OperatorFactory,
+  OrganizationFactory,
+  SlackRequestFactory,
+} from '../factories';
 
 describe('services/SlackInbound', () => {
   it('renders the correct Message object from a Slack command with valid Complete SMS Number', () => {
-    const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const contactCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const messageBody = faker.lorem.sentence();
     const messageId = faker.random.uuid();
+    const slackChannelId: string = faker.random.uuid();
     const slackMessageBody = `${contactCompleteSmsNumber} ${messageBody}`;
     const operator = new OperatorFactory({});
 
     const slackRequest = new SlackRequestFactory({
-      channel_id: channelCompleteSmsNumber,
+      channel_id: slackChannelId,
       user_name: operator.slackUserName,
       text: slackMessageBody,
     });
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
 
-    const channels = {
-      [channelCompleteSmsNumber]: {
-        id: 'asdf',
-        name: 'asdf',
-        completeSmsNumber: channelCompleteSmsNumber,
-        type: 'team',
-        slackChannelId: slackRequest.channel_id,
-      },
-    };
-    const organization = new OrganizationFactory({
-      slackTeamId: slackRequest.team_id,
-      twilioAccountPhoneNumber: channelCompleteSmsNumber,
-      channels,
+    const organization = new OrganizationFactory({});
+
+    const channel = new ChannelFactory({
+      slackChannelId,
     });
 
-    const channel = organization.channels[channelCompleteSmsNumber];
+    organization.channels[channel.id] = channel;
+    organization.slackChannelIds.push[slackChannelId];
 
-    const message = {
+    const message = new MessageFactory({
       id: messageId,
       status: 200,
       type: messageTypes.SLACK_INBOUND,
@@ -53,7 +52,6 @@ describe('services/SlackInbound', () => {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: '',
       source: {
         type: sourceTypes.SLACK,
         meta: {
@@ -61,23 +59,23 @@ describe('services/SlackInbound', () => {
         },
       },
       author: {
-        type: authorTypes.OPERATOR,
-        id: operator.id,
-        firstName: operator.firstName,
-        lastName: operator.lastName,
-        username: operator.username,
         completeSmsNumber: operator.completeSmsNumber,
         email: operator.email,
+        firstName: operator.firstName,
+        id: operator.id,
+        lastName: operator.lastName,
+        type: authorTypes.OPERATOR,
+        username: operator.username,
       },
       organization: {
         id: organization.id,
         name: organization.name,
       },
       channelResponse: {
-        status: true,
+        body: `+${contact.username} ${messageBody}`,
         id: channel.id,
         name: channel.name,
-        body: `+${contact.username} ${messageBody}`,
+        status: true,
       },
       apiResponse: {
         status: false,
@@ -92,11 +90,13 @@ describe('services/SlackInbound', () => {
       },
       smsResponse: {
         body: messageBody,
-        completeSmsNumber: contact.completeSmsNumber,
         contact,
         status: true,
+        twilioAccountPhoneNumber: channel.twilioAccountPhoneNumber,
+        twilioAuthToken: channel.twilioAuthToken,
+        twilioSid: channel.twilioSid,
       },
-    };
+    });
 
     const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
     asyncOperatorMock.mockResolvedValue(operator);
@@ -113,39 +113,32 @@ describe('services/SlackInbound', () => {
   it('renders the correct Message object from a Slack command with valid Command SMS Number', () => {
     const contactCommandSmsNumber = faker.phone.phoneNumber('+##########');
     const completeSmsNumber = `+1${contactCommandSmsNumber.substring(1)}`;
-    const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const contactCompleteSmsNumber = completeSmsNumber;
     const messageBody = faker.lorem.sentence();
     const messageId = faker.random.uuid();
+    const slackChannelId = faker.random.uuid();
     const operator = new OperatorFactory({});
 
     const slackMessageBody = `${contactCommandSmsNumber} ${messageBody}`;
 
     const slackRequest = new SlackRequestFactory({
-      channel_id: channelCompleteSmsNumber,
+      channel_id: slackChannelId,
       user_name: operator.slackUserName,
       text: slackMessageBody,
     });
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber });
 
-    const channels = {
-      [channelCompleteSmsNumber]: {
-        id: 'asdf',
-        name: 'asdf',
-        completeSmsNumber: channelCompleteSmsNumber,
-        type: 'team',
-        slackChannelId: slackRequest.channel_id,
-      },
-    };
-    const organization = new OrganizationFactory({
-      slackTeamId: slackRequest.team_id,
-      twilioAccountPhoneNumber: channelCompleteSmsNumber,
-      channels,
-    });
-    const channel = organization.channels[channelCompleteSmsNumber];
+    const organization = new OrganizationFactory({});
 
-    const message = {
+    const channel = new ChannelFactory({
+      slackChannelId,
+    });
+
+    organization.channels[channel.id] = channel;
+    organization.slackChannelIds.push[slackChannelId];
+
+    const message = new MessageFactory({
       id: messageId,
       status: 200,
       type: messageTypes.SLACK_INBOUND,
@@ -154,7 +147,6 @@ describe('services/SlackInbound', () => {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: '',
       source: {
         type: sourceTypes.SLACK,
         meta: {
@@ -193,11 +185,13 @@ describe('services/SlackInbound', () => {
       },
       smsResponse: {
         body: messageBody,
-        completeSmsNumber: contact.completeSmsNumber,
         contact,
         status: true,
+        twilioAccountPhoneNumber: channel.twilioAccountPhoneNumber,
+        twilioAuthToken: channel.twilioAuthToken,
+        twilioSid: channel.twilioSid,
       },
-    };
+    });
 
     const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
     asyncOperatorMock.mockResolvedValue(operator);
@@ -213,39 +207,32 @@ describe('services/SlackInbound', () => {
 
   it('renders the correct Message object from a Slack command with valid Contact Username', () => {
     const contactCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
-    const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const contactUsername = faker.internet.userName();
     const messageBody = faker.lorem.sentence();
     const messageId = faker.random.uuid();
+    const slackChannelId = faker.random.uuid();
     const operator = new OperatorFactory({});
 
     const slackMessageBody = `+${contactUsername} ${messageBody}`;
 
     const slackRequest = new SlackRequestFactory({
-      channel_id: channelCompleteSmsNumber,
+      channel_id: slackChannelId,
       user_name: operator.slackUserName,
       text: slackMessageBody,
     });
 
     const contact = new ContactFactory({ completeSmsNumber: contactCompleteSmsNumber, username: contactUsername });
 
-    const channels = {
-      [channelCompleteSmsNumber]: {
-        id: 'asdf',
-        name: 'asdf',
-        completeSmsNumber: channelCompleteSmsNumber,
-        type: 'team',
-        slackChannelId: slackRequest.channel_id,
-      },
-    };
-    const organization = new OrganizationFactory({
-      slackTeamId: slackRequest.team_id,
-      twilioAccountPhoneNumber: channelCompleteSmsNumber,
-      channels,
-    });
-    const channel = organization.channels[channelCompleteSmsNumber];
+    const organization = new OrganizationFactory({});
 
-    const message = {
+    const channel = new ChannelFactory({
+      slackChannelId,
+    });
+
+    organization.channels[channel.id] = channel;
+    organization.slackChannelIds.push[slackChannelId];
+
+    const message = new MessageFactory({
       id: messageId,
       status: 200,
       type: messageTypes.SLACK_INBOUND,
@@ -254,7 +241,6 @@ describe('services/SlackInbound', () => {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: '',
       source: {
         type: sourceTypes.SLACK,
         meta: {
@@ -293,11 +279,13 @@ describe('services/SlackInbound', () => {
       },
       smsResponse: {
         body: messageBody,
-        completeSmsNumber: contact.completeSmsNumber,
         contact,
         status: true,
+        twilioAccountPhoneNumber: channel.twilioAccountPhoneNumber,
+        twilioAuthToken: channel.twilioAuthToken,
+        twilioSid: channel.twilioSid,
       },
-    };
+    });
 
     const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
     asyncOperatorMock.mockResolvedValue(operator);
@@ -312,36 +300,30 @@ describe('services/SlackInbound', () => {
   });
 
   it('renders the correct Message object from a Slack command with an invalid Contact Username', () => {
-    const channelCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const contactUsername = faker.internet.userName();
     const messageBody = faker.lorem.sentence();
     const messageId = faker.random.uuid();
+    const slackChannelId = faker.random.uuid();
     const operator = new OperatorFactory({});
 
     const slackMessageBody = `+${contactUsername} ${messageBody}`;
 
     const slackRequest = new SlackRequestFactory({
-      channel_id: channelCompleteSmsNumber,
+      channel_id: slackChannelId,
       user_name: operator.slackUserName,
       text: slackMessageBody,
     });
 
-    const channels = {
-      [channelCompleteSmsNumber]: {
-        id: 'asdf',
-        name: 'asdf',
-        completeSmsNumber: channelCompleteSmsNumber,
-        type: 'team',
-        slackChannelId: slackRequest.channel_id,
-      },
-    };
-    const organization = new OrganizationFactory({
-      slackTeamId: slackRequest.team_id,
-      twilioAccountPhoneNumber: channelCompleteSmsNumber,
-      channels,
+    const organization = new OrganizationFactory({});
+
+    const channel = new ChannelFactory({
+      slackChannelId,
     });
 
-    const message = {
+    organization.channels[channel.id] = channel;
+    organization.slackChannelIds.push[slackChannelId];
+
+    const message = new MessageFactory({
       id: messageId,
       status: 200,
       type: messageTypes.SLACK_INBOUND,
@@ -350,7 +332,6 @@ describe('services/SlackInbound', () => {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: '',
       source: {
         type: sourceTypes.SLACK,
         meta: {
@@ -389,11 +370,19 @@ describe('services/SlackInbound', () => {
       },
       smsResponse: {
         body: '',
-        completeSmsNumber: '',
-        contact: {},
+        contact: {
+          id: '',
+          firstName: '',
+          lastName: '',
+          completeSmsNumber: '',
+          username: '',
+        },
         status: false,
+        twilioAccountPhoneNumber: '',
+        twilioAuthToken: '',
+        twilioSid: '',
       },
-    };
+    });
 
     const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
     asyncOperatorMock.mockResolvedValue(operator);

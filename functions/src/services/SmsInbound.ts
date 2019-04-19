@@ -1,6 +1,7 @@
 import AutoId from '../utilities/AutoId';
 import Contact from '../models/Contact';
 import Message from '../models/Message';
+import Organization from '../models/Organization';
 import * as sourceTypes from '../constants/sourceTypes';
 import * as authorTypes from '../constants/authorTypes';
 import * as slackResponseTypes from '../constants/slackResponseTypes';
@@ -11,10 +12,10 @@ class SmsInbound {
     const { Body, To, From, NumMedia } = req;
     let formattedMessageBody: string = '';
 
-    const channel: any = organization.channels[To];
+    const channel: any = Organization.channelFindByVal({ organization, field: 'twilioAccountPhoneNumber', val: To });
     const contact: any = await Contact.findByValOrCreate({
       organizationId: organization.id,
-      field: 'smsPhoneNumber',
+      field: 'completeSmsPhoneNumber',
       val: From,
     });
 
@@ -38,13 +39,13 @@ class SmsInbound {
     }
 
     let slackResponse = {};
-    if (organization.usesSlack) {
+    if (channel.usesSlack) {
       slackResponse = {
         body: formattedMessageBody,
-        channel_id: organization.slackChannelId,
+        channel_id: channel.slackChannelId,
         response_type: slackResponseTypes.IN_CHANNEL,
         status: true,
-        token: organization.slackBotToken,
+        token: channel.slackBotToken,
       };
     } else {
       slackResponse = {
@@ -65,7 +66,6 @@ class SmsInbound {
       archived: false,
       attachments,
       tags: [],
-      smsInboundNumber: To,
       source: {
         type: sourceTypes.TWILIO,
         meta: {
@@ -79,6 +79,7 @@ class SmsInbound {
         lastName: contact.lastName,
         username: contact.username,
         completeSmsNumber: contact.completeSmsNumber,
+        email: '',
       },
       organization: {
         id: organization.id,
@@ -98,10 +99,18 @@ class SmsInbound {
         ...slackResponse,
       },
       smsResponse: {
-        status: false,
-        completeSmsNumber: '',
         body: '',
-        contact: {},
+        contact: {
+          id: '',
+          firstName: '',
+          lastName: '',
+          completeSmsNumber: '',
+          username: '',
+        },
+        status: false,
+        twilioAccountPhoneNumber: '',
+        twilioAuthToken: '',
+        twilioSid: '',
       },
     };
 

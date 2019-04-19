@@ -101,11 +101,11 @@ class Organization {
     try {
       const db = admin.firestore();
       const docRef = db.collection(ORGANIZATIONS);
-      const users = await docRef.where(field, '==', val);
+      const organizations = await docRef.where(field, '==', val);
 
-      return users;
+      return organizations;
     } catch (err) {
-      console.error('User > whereByVal: ', err);
+      console.error('Organization > whereByVal: ', err);
       return null;
     }
   }
@@ -116,6 +116,54 @@ class Organization {
     });
 
     return organization.channels[keys[0]];
+  }
+
+  static async findBySlackChannelId(channel_id: string) {
+    try {
+      const db = admin.firestore();
+      const collectionRef = db
+        .collection(ORGANIZATIONS)
+        .where('slackChannelIds', 'array-contains', channel_id)
+        .limit(1);
+      const querySnapshot = await collectionRef.get();
+
+      if (!querySnapshot.empty) {
+        const data = querySnapshot.docs.map(docSnapshot => {
+          return { ...docSnapshot.data() };
+        });
+
+        return data[0];
+      } else {
+        return {};
+      }
+    } catch (err) {
+      console.error('Organization > findBySlackChannelId: ', err);
+      return null;
+    }
+  }
+
+  static async findByTwilioAccountPhoneNumber(twilioAccountPhoneNumber: string) {
+    try {
+      const db = admin.firestore();
+      const collectionRef = db
+        .collection(ORGANIZATIONS)
+        .where('twilioAccountPhoneNumbers', 'array-contains', twilioAccountPhoneNumber)
+        .limit(1);
+      const querySnapshot = await collectionRef.get();
+
+      if (!querySnapshot.empty) {
+        const data = querySnapshot.docs.map(docSnapshot => {
+          return { ...docSnapshot.data() };
+        });
+
+        return data[0];
+      } else {
+        return {};
+      }
+    } catch (err) {
+      console.error('Organization > findByTwilioAccountPhoneNumber: ', err);
+      return null;
+    }
   }
 }
 

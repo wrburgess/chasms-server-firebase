@@ -3,13 +3,13 @@ import * as Twilio from 'twilio';
 class SmsOutbound {
   static async sendMessage(message: any) {
     try {
-      const { body, completeSmsNumber, twilioAccountPhoneNumber, twilioAuthToken, twilioSid } = message.smsResponse;
+      const { body, contact, twilioAccountPhoneNumber, twilioAuthToken, twilioSid } = message.smsResponse;
 
       const twilio = Twilio(twilioSid, twilioAuthToken);
 
       const message = {
         from: twilioAccountPhoneNumber,
-        to: completeSmsNumber,
+        to: contact.completeSmsNumber,
         body: body,
       };
 

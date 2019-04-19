@@ -16,7 +16,7 @@ class Contact {
         firstName: '',
         lastName: '',
         username: '',
-        smsNumber: attrs.smsNumber,
+        completeSmsNumber: attrs.smsNumber,
         email: '',
         ...attrs,
         created_at: admin.firestore.FieldValue.serverTimestamp(),
@@ -125,7 +125,7 @@ class Contact {
 
         return data[0];
       } else {
-        return await Contact.create({ organizationId, id: val, smsNumber: val });
+        return await Contact.create({ organizationId, id: val, completeSmsNumber: val });
       }
     } catch (err) {
       console.error('User > findByVal: ', err);

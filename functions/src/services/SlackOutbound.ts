@@ -11,7 +11,6 @@ import { SLACK_EPHEMERAL_MESSAGE_URI, SLACK_PUBLIC_MESSAGE_URI } from '../consta
 //   archived: false,
 //   attachments: [],
 //   tags: [],
-//   smsInboundNumber: '',
 //   source: {
 //     type: 'slack',
 //     meta: {

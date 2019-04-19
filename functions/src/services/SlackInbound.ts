@@ -31,26 +31,36 @@ class SlackInbound {
     let contact: any = command.contact;
 
     let smsResponse: any = {};
-    if (command.type === commandTypes.OUTBOUND_SMS && channel.id) {
+    if (command.type === commandTypes.OUTBOUND_SMS && channel.usesTwilio) {
       // construct sms response
       smsResponse = {
         body: command.messageBody,
-        completeSmsNumber: command.completeSmsNumber,
         contact,
         status: true,
+        twilioAccountPhoneNumber: channel.twilioAccountPhoneNumber,
+        twilioAuthToken: channel.twilioAuthToken,
+        twilioSid: channel.twilioSid,
       };
     } else {
       // negate sms response
       smsResponse = {
         body: '',
-        completeSmsNumber: '',
-        contact: {},
+        contact: {
+          id: '',
+          firstName: '',
+          lastName: '',
+          completeSmsNumber: '',
+          username: '',
+        },
         status: false,
+        twilioAccountPhoneNumber: '',
+        twilioAuthToken: '',
+        twilioSid: '',
       };
     }
 
     let slackResponse: any = {};
-    if (organization.usesSlack && command.type !== commandTypes.INVALID) {
+    if (channel.usesSlack && command.type !== commandTypes.INVALID) {
       slackResponse = {
         body: `+${contact.username} ${command.messageBody}`,
         channel_id: req.channel_id,
@@ -58,7 +68,7 @@ class SlackInbound {
         status: true,
         token: req.token,
       };
-    } else if (organization.usesSlack && command.type === commandTypes.INVALID) {
+    } else if (channel.usesSlack && command.type === commandTypes.INVALID) {
       slackResponse = {
         body: `Unknown username for command: ${req.text}`,
         channel_id: req.channel_id,
@@ -94,7 +104,6 @@ class SlackInbound {
       archived: false,
       attachments: [],
       tags: [],
-      smsInboundNumber: '',
       source: {
         type: sourceTypes.SLACK,
         meta: {

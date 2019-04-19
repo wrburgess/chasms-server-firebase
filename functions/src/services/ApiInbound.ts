@@ -11,7 +11,6 @@ class ApiInbound {
     const payload = {
       organizationId: req,
       channelId: req,
-      smsInboundNumber: null,
       type: 'apiInbound',
       author: {},
       body: '',
