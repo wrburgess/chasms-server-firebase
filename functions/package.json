@@ -36,8 +36,8 @@
     "@types/morgan": "1.7.35",
     "@types/source-map-support": "0.5.0",
     "@types/twilio": "0.0.10",
-    "@typescript-eslint/eslint-plugin": "1.6.0",
-    "@typescript-eslint/parser": "1.6.0",
+    "@typescript-eslint/eslint-plugin": "1.7.0",
+    "@typescript-eslint/parser": "1.7.0",
     "esdoc": "1.1.0",
     "esdoc-standard-plugin": "1.0.0",
     "esdoc-typescript-plugin": "1.0.1",
@@ -48,7 +48,7 @@
     "jest": "24.7.1",
     "prettier": "1.17.0",
     "ts-jest": "24.0.2",
-    "typescript": "3.4.4"
+    "typescript": "3.4.5"
   },
   "private": true
 }
