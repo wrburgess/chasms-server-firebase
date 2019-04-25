@@ -27,7 +27,7 @@ class SmsInbound {
       for (let i = 0; i < attachmentsCount; i += 1) {
         attachments.push({
           fallback: 'Error: Message can not render',
-          image_url: req.body[`MediaUrl${i}`],
+          image_url: req[`MediaUrl${i}`],
           color: '#3AA3E3',
         });
       }
