@@ -102,7 +102,7 @@ describe('services/SlackInbound', () => {
       },
     });
 
-    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
+    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByValOrCreate');
     asyncOperatorMock.mockResolvedValue(operator);
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
@@ -201,7 +201,7 @@ describe('services/SlackInbound', () => {
       },
     });
 
-    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
+    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByValOrCreate');
     asyncOperatorMock.mockResolvedValue(operator);
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
@@ -299,7 +299,7 @@ describe('services/SlackInbound', () => {
       },
     });
 
-    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
+    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByValOrCreate');
     asyncOperatorMock.mockResolvedValue(operator);
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
@@ -400,7 +400,7 @@ describe('services/SlackInbound', () => {
       },
     });
 
-    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByVal');
+    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByValOrCreate');
     asyncOperatorMock.mockResolvedValue(operator);
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
