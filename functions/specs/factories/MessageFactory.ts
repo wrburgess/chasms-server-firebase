@@ -14,7 +14,7 @@ class MessageFactory {
   requestBody: string;
   validRequest: boolean;
   archived: boolean;
-  attachments: Array<string>;
+  attachments: any;
   tags: Array<string>;
   source: Object;
   author: Object;
@@ -31,7 +31,7 @@ class MessageFactory {
     requestBody = faker.lorem.sentence(),
     validRequest = true,
     archived = false,
-    attachments = [],
+    attachments = [{}],
     tags = [],
     source = {
       type: sourceTypes.SLACK,
@@ -62,7 +62,7 @@ class MessageFactory {
     },
     slackResponse = {
       as_user: false,
-      attachments: [],
+      attachments: [{}],
       channel: faker.internet.userName(),
       link_names: true,
       response_type: slackResponseTypes.IN_CHANNEL,

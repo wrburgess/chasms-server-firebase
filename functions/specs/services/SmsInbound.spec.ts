@@ -259,7 +259,13 @@ describe('services/SmsInbound', () => {
       requestBody: twilioRequest.Body,
       validRequest: true,
       archived: false,
-      attachments: [],
+      attachments: [
+        {
+          color: '#3AA3E3',
+          fallback: 'Error: Message can not render',
+          image_url: mediaUrl,
+        },
+      ],
       tags: [],
       source: {
         type: sourceTypes.TWILIO,
@@ -295,7 +301,7 @@ describe('services/SmsInbound', () => {
         attachments: [
           {
             color: '#3AA3E3',
-            fallback: 'Error: Message can not render!',
+            fallback: 'Error: Message can not render',
             image_url: mediaUrl,
           },
         ],
