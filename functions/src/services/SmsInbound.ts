@@ -2,6 +2,7 @@ import AutoId from '../utilities/AutoId';
 import Contact from '../models/Contact';
 import Message from '../models/Message';
 import Organization from '../models/Organization';
+import SaveTwilioImageToStorage from '../services/SaveTwilioImageToStorage';
 import * as sourceTypes from '../constants/sourceTypes';
 import * as authorTypes from '../constants/authorTypes';
 import * as slackResponseTypes from '../constants/slackResponseTypes';
@@ -30,6 +31,8 @@ class SmsInbound {
           image_url: req[`MediaUrl${i}`],
           color: '#3AA3E3',
         });
+
+        SaveTwilioImageToStorage('twilio', `MediaUrl${i}`, organization);
       }
     }
 
