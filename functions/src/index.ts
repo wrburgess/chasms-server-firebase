@@ -28,6 +28,7 @@ if (!process.env.FB_SERVICE_ACCOUNT_KEY) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://chasms-server-staging.firebaseio.com',
+    storageBucket: 'chasms-server-staging.appspot.com',
   });
 } else {
   admin.initializeApp();

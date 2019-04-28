@@ -2,33 +2,36 @@ import * as admin from 'firebase-admin';
 import { ORGANIZATIONS, ASSETS } from '../constants/models';
 
 class Asset {
-  static create(attrs) {
-    const {
-      organizationId,
-      url,
-      userId,
-    } = attrs;
+  static async create(attrs: any) {
+    const docRef = admin
+      .firestore()
+      .collection(ORGANIZATIONS)
+      .doc(attrs.organization.id)
+      .collection(ASSETS)
+      .doc(attrs.id);
 
-    const collectionRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId).collection(ASSETS);
-
-    collectionRef.add({
-      url,
-      userId,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    const document = await docRef.set({
+      ...attrs,
+      updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
     });
+
+    return document;
   }
 
   static async all(attrs) {
     const { organizationId } = attrs;
 
     try {
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const docRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId);
       const query = docRef.collection(ASSETS).orderBy('name');
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
-        const data = querySnapshot.docs.map((docSnapshot) => {
+        const data = querySnapshot.docs.map(docSnapshot => {
           return { id: docSnapshot.id, ...docSnapshot.data() };
         });
 
@@ -47,12 +50,18 @@ class Asset {
     const { organizationId, field, val } = attrs;
 
     try {
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
-      const query = docRef.collection(ASSETS).where(field, '==', val).limit(1);
+      const docRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId);
+      const query = docRef
+        .collection(ASSETS)
+        .where(field, '==', val)
+        .limit(1);
       const querySnapshot = await query.get();
 
       if (!querySnapshot.empty) {
-        const data = querySnapshot.docs.map((docSnapshot) => {
+        const data = querySnapshot.docs.map(docSnapshot => {
           return { id: docSnapshot.id, ...docSnapshot.data() };
         });
 
@@ -71,7 +80,10 @@ class Asset {
     const { organizationId, field, val } = attrs;
 
     try {
-      const docRef = admin.firestore().collection(ORGANIZATIONS).doc(organizationId);
+      const docRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId);
       const collectionRef = docRef.collection(ASSETS);
       const query = collectionRef.where(field, '==', val);
       const querySnapshot = await query.get();
