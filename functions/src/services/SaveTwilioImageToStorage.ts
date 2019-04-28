@@ -1,44 +1,50 @@
 import * as admin from 'firebase-admin';
 import * as crypto from 'crypto';
 import * as request from 'request';
-import * as Asset from '../models/Asset';
-import * as assetTypes from '../constants/assetTypes';
 import AutoId from '../utilities/AutoId';
+import Asset from '../models/Asset';
+import * as assetTypes from '../constants/assetTypes';
+import * as fileTypes from '../constants/fileTypes';
+import * as sourceTypes from '../constants/sourceTypes';
 
-const SaveTwilioImageToStorage = async ({ url, organization }) => {
+const SaveTwilioImageToStorage = async ({ twilioMediaUrl, organizationId, contact }) => {
   try {
     const bucket = admin.storage().bucket();
     const randomFileName = crypto.randomBytes(16).toString('hex');
+    const storagePath = `${organizationId}/images/${randomFileName}.jpg`;
 
-    request.head(url, (headError: any, info: any) => {
+    request.head(twilioMediaUrl, (headError: any, info: any) => {
       if (headError) {
         return console.error('SaveTwilioImageToStorage > request:', headError);
       }
 
-      request(url)
+      request(twilioMediaUrl)
         .pipe(
-          bucket.file(`${organization.id}/images/${randomFileName}.jpg`).createWriteStream({
+          bucket.file(storagePath).createWriteStream({
+            private: true,
             metadata: {
-              public: false,
               contentType: info.headers['content-type'],
-              organizationId: organization.id,
+              organizationId,
             },
           }),
         )
         .on('error', (requestError: any) => {
-          // Do something if the upload fails.
           console.error('SaveTwilioImageToStorage > request:', requestError);
         })
-        .on('finish', (stuff: any) => {
+        .on('finish', () => {
           Asset.create({
-            id: AutoId.newId(),
-            url: '',
-            sourceUrl: '',
+            organizationId,
+            contact,
             assetType: assetTypes.IMAGE,
+            fileType: fileTypes.JPEG,
+            id: AutoId.newId(),
+            sourceType: sourceTypes.TWILIO,
+            sourceUrl: twilioMediaUrl,
+            storagePath,
+            tags: [],
           });
-          // Do something when everything is done.
+
           // Get download url for stored image
-          console.log('SaveTwilioImageToStorage > request:', stuff);
         });
     });
   } catch (err) {

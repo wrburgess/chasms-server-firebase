@@ -3,50 +3,28 @@ import { ORGANIZATIONS, ASSETS } from '../constants/models';
 
 class Asset {
   static async create(attrs: any) {
-    const docRef = admin
-      .firestore()
-      .collection(ORGANIZATIONS)
-      .doc(attrs.organization.id)
-      .collection(ASSETS)
-      .doc(attrs.id);
-
-    const document = await docRef.set({
-      ...attrs,
-      updated_at: admin.firestore.FieldValue.serverTimestamp(),
-      created_at: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    return document;
-  }
-
-  static async all(attrs) {
-    const { organizationId } = attrs;
-
     try {
       const docRef = admin
         .firestore()
         .collection(ORGANIZATIONS)
-        .doc(organizationId);
-      const query = docRef.collection(ASSETS).orderBy('name');
-      const querySnapshot = await query.get();
+        .doc(attrs.organizationId)
+        .collection(ASSETS)
+        .doc(attrs.id);
 
-      if (!querySnapshot.empty) {
-        const data = querySnapshot.docs.map(docSnapshot => {
-          return { id: docSnapshot.id, ...docSnapshot.data() };
-        });
+      const document = await docRef.set({
+        ...attrs,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      });
 
-        return data;
-      } else {
-        const err = new Error('No results for query');
-        throw err;
-      }
+      return document;
     } catch (err) {
-      console.error('Asset > all: ', err);
+      console.error('Asset > create: ', err);
       return null;
     }
   }
 
-  static async findByVal(attrs) {
+  static async findByVal(attrs: any) {
     const { organizationId, field, val } = attrs;
 
     try {
@@ -76,7 +54,7 @@ class Asset {
     }
   }
 
-  static async whereByVal(attrs) {
+  static async whereByVal(attrs: any) {
     const { organizationId, field, val } = attrs;
 
     try {

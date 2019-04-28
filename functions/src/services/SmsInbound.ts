@@ -32,7 +32,7 @@ class SmsInbound {
           color: '#3AA3E3',
         });
 
-        SaveTwilioImageToStorage({ sourceType: 'twilio', url: req[`MediaUrl${i}`], organization });
+        SaveTwilioImageToStorage({ twilioMediaUrl: req[`MediaUrl${i}`], organizationId: organization.id, contact });
       }
     }
 
