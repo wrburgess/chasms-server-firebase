@@ -2,11 +2,11 @@ import AutoId from '../utilities/AutoId';
 import Contact from '../models/Contact';
 import Message from '../models/Message';
 import Organization from '../models/Organization';
-import SaveTwilioImageToStorage from '../services/SaveTwilioImageToStorage';
 import * as sourceTypes from '../constants/sourceTypes';
 import * as authorTypes from '../constants/authorTypes';
 import * as slackResponseTypes from '../constants/slackResponseTypes';
 import * as messageTypes from '../constants/messageTypes';
+import AssetManagement from './AssetManagement';
 
 class SmsInbound {
   static async processRequest({ req, organization }) {
@@ -22,17 +22,24 @@ class SmsInbound {
     });
 
     const attachmentsCount: number = Number(NumMedia);
-    const attachments: Array<any> = [];
+    const attachments: any = {};
+    const slackAttachments: Array<any> = [];
 
     if (attachmentsCount > 0) {
       for (let i = 0; i < attachmentsCount; i += 1) {
-        attachments.push({
+        const id = AutoId.newId();
+
+        attachments[id] = {
+          id,
+          sourceUrl: req[`MediaUrl${i}`],
+          storagePath: '',
+        };
+
+        slackAttachments.push({
           fallback: 'Error: Message can not render',
           image_url: req[`MediaUrl${i}`],
           color: '#3AA3E3',
         });
-
-        SaveTwilioImageToStorage({ twilioMediaUrl: req[`MediaUrl${i}`], organizationId: organization.id, contact });
       }
     }
 
@@ -46,7 +53,7 @@ class SmsInbound {
     if (channel.usesSlack) {
       slackResponse = {
         as_user: false,
-        attachments,
+        attachments: slackAttachments,
         channel: channel.slackChannelId,
         link_names: true,
         response_type: slackResponseTypes.IN_CHANNEL,
@@ -126,9 +133,8 @@ class SmsInbound {
       },
     };
 
-    // console.log('message', message);
-
-    Message.create(message);
+    const newMessage = await Message.create(message);
+    AssetManagement.processMessageAttachments(newMessage);
 
     return message;
   }

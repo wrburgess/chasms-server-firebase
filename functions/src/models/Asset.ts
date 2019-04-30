@@ -3,6 +3,7 @@ import { ORGANIZATIONS, ASSETS } from '../constants/models';
 
 class Asset {
   static async create(attrs: any) {
+    console.log('attrs', attrs);
     try {
       const docRef = admin
         .firestore()

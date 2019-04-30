@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { ORGANIZATIONS, MESSAGES } from '../constants/models';
+import { MESSAGES, ORGANIZATIONS } from '../constants/models';
 
 class Message {
   static async create(attrs: any) {
@@ -11,16 +11,41 @@ class Message {
         .collection(MESSAGES)
         .doc(attrs.id);
 
-      const document = await docRef.set({
+      await docRef.set({
         ...attrs,
         created_at: admin.firestore.FieldValue.serverTimestamp(),
         updated_at: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return document;
+      const docSnapshot = await docRef.get();
+
+      return { ...docSnapshot.data() };
     } catch (err) {
       console.error('Message > create: ', err);
       return null;
+    }
+  }
+
+  static async update({ organizationId, messageId, field, val }) {
+    try {
+      const docRef = admin
+        .firestore()
+        .collection(ORGANIZATIONS)
+        .doc(organizationId)
+        .collection(MESSAGES)
+        .doc(messageId);
+
+      await docRef.update({
+        [field]: val,
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      const document = await docRef.get();
+      console.log(document.data());
+      return document.data();
+    } catch (err) {
+      console.error('Message > update: ', err);
+      return {};
     }
   }
 
