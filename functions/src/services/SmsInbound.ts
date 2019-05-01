@@ -133,8 +133,8 @@ class SmsInbound {
       },
     };
 
-    const newMessage = await Message.create(message);
-    AssetManagement.processMessageAttachments(newMessage);
+    // console.log('message', message);
+    Message.create(message);
 
     return message;
   }
