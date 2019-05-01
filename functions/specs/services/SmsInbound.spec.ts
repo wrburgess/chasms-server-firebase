@@ -46,7 +46,7 @@ describe('services/SmsInbound', () => {
       requestBody: twilioRequest.Body,
       validRequest: true,
       archived: false,
-      attachments: [],
+      attachments: {},
       tags: [],
       source: {
         type: sourceTypes.TWILIO,
@@ -150,7 +150,7 @@ describe('services/SmsInbound', () => {
       requestBody: twilioRequest.Body,
       validRequest: true,
       archived: false,
-      attachments: [],
+      attachments: {},
       tags: [],
       source: {
         type: sourceTypes.TWILIO,
@@ -223,8 +223,8 @@ describe('services/SmsInbound', () => {
     const contactCompleteSmsNumber = faker.phone.phoneNumber('+1##########');
     const messageBody = faker.lorem.sentence();
     const messageId = faker.random.uuid();
-
     const mediaUrl = `https://api.twilio.com/2010-04-01/Accounts/${faker.random.uuid()}/Messages/${faker.random.uuid()}/Media/${faker.random.uuid()}`;
+
     const twilioRequest = new TwilioRequestFactory({
       From: contactCompleteSmsNumber,
       To: channelCompleteSmsNumber,
@@ -259,13 +259,13 @@ describe('services/SmsInbound', () => {
       requestBody: twilioRequest.Body,
       validRequest: true,
       archived: false,
-      attachments: [
-        {
-          color: '#3AA3E3',
-          fallback: 'Error: Message can not render',
-          image_url: mediaUrl,
+      attachments: {
+        [`${messageId}_0`]: {
+          id: `${messageId}_0`,
+          sourceUrl: mediaUrl,
+          storagePath: '',
         },
-      ],
+      },
       tags: [],
       source: {
         type: sourceTypes.TWILIO,
@@ -328,7 +328,6 @@ describe('services/SmsInbound', () => {
         twilioSid: '',
       },
     });
-
     const asyncMessageMock: any = jest.spyOn(Message, 'create');
     asyncMessageMock.mockResolvedValue(message);
     const asyncContactMock: any = jest.spyOn(Contact, 'findByValOrCreate');
@@ -376,7 +375,7 @@ describe('services/SmsInbound', () => {
       requestBody: twilioRequest.Body,
       validRequest: true,
       archived: false,
-      attachments: [],
+      attachments: {},
       tags: [],
       source: {
         type: sourceTypes.TWILIO,

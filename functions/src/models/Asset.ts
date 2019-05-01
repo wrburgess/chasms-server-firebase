@@ -1,9 +1,19 @@
+import AutoId from '../utilities/AutoId';
 import * as admin from 'firebase-admin';
 import { ORGANIZATIONS, ASSETS } from '../constants/models';
 
 class Asset {
+  id: string;
+  sourceUrl: string;
+  storagePath: string;
+
+  constructor({ id = AutoId.newId(), sourceUrl = '', storagePath = '' }) {
+    this.id = id;
+    this.sourceUrl = sourceUrl;
+    this.storagePath = storagePath;
+  }
+
   static async create(attrs: any) {
-    console.log('attrs', attrs);
     try {
       const docRef = admin
         .firestore()

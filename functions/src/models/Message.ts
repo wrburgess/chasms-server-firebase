@@ -41,7 +41,6 @@ class Message {
       });
 
       const document = await docRef.get();
-      console.log(document.data());
       return document.data();
     } catch (err) {
       console.error('Message > update: ', err);

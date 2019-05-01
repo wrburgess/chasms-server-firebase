@@ -1,3 +1,4 @@
+import Asset from '../models/Asset';
 import AutoId from '../utilities/AutoId';
 import Contact from '../models/Contact';
 import Message from '../models/Message';
@@ -6,11 +7,11 @@ import * as sourceTypes from '../constants/sourceTypes';
 import * as authorTypes from '../constants/authorTypes';
 import * as slackResponseTypes from '../constants/slackResponseTypes';
 import * as messageTypes from '../constants/messageTypes';
-import AssetManagement from './AssetManagement';
 
 class SmsInbound {
   static async processRequest({ req, organization }) {
     const { Body, To, From, NumMedia } = req;
+    const messageId = AutoId.newId();
     let formattedMessageBody: string = '';
 
     const channel: any = Organization.channelFindByVal({ organization, field: 'twilioAccountPhoneNumber', val: To });
@@ -27,13 +28,12 @@ class SmsInbound {
 
     if (attachmentsCount > 0) {
       for (let i = 0; i < attachmentsCount; i += 1) {
-        const id = AutoId.newId();
-
-        attachments[id] = {
-          id,
+        const asset = new Asset({
+          id: `${messageId}_${i}`,
           sourceUrl: req[`MediaUrl${i}`],
-          storagePath: '',
-        };
+        });
+
+        attachments[asset.id] = asset;
 
         slackAttachments.push({
           fallback: 'Error: Message can not render',
@@ -77,7 +77,7 @@ class SmsInbound {
     }
 
     const message = {
-      id: AutoId.newId(),
+      id: messageId,
       status: 200,
       type: messageTypes.TWILIO_INBOUND,
       requestBody: Body,

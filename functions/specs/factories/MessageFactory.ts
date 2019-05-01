@@ -31,7 +31,7 @@ class MessageFactory {
     requestBody = faker.lorem.sentence(),
     validRequest = true,
     archived = false,
-    attachments = [{}],
+    attachments = {},
     tags = [],
     source = {
       type: sourceTypes.SLACK,

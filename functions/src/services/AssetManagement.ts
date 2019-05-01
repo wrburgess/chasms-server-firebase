@@ -1,6 +1,5 @@
 import CopyPublicImageToStorage from '../services/CopyPublicImageToStorage';
 import Message from '../models/Message';
-import * as crypto from 'crypto';
 
 class AssetManagement {
   static async processMessageAttachments(message: any) {
@@ -8,8 +7,7 @@ class AssetManagement {
 
     if (message && attachmentNumber > 0) {
       const { id, attachments, author, organization } = message;
-      const randomFileName = crypto.randomBytes(16).toString('hex');
-      const storagePath = `${organization.id}/images/${randomFileName}.jpg`;
+      const storagePath = `${organization.id}/images/${id}.jpg`;
 
       const keys = Object.keys(attachments);
       for (const key of keys) {

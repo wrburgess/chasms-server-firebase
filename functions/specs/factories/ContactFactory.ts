@@ -1,6 +1,6 @@
 import * as faker from 'faker';
 
-class Contact {
+class ContactFactory {
   id: string;
   firstName: string;
   lastName: string;
@@ -22,4 +22,4 @@ class Contact {
   }
 }
 
-export default Contact;
+export default ContactFactory;
