@@ -25,7 +25,7 @@
 export default class SmsResponse {
   request: object = {};
 
-  constructor(request: any) {
+  constructor(request: object) {
     this.request = request;
   }
 
@@ -74,13 +74,13 @@ export default class SmsResponse {
    * getMessageBody(command)
    * this is a message body
    */
-  getMessageBody(command: string) {
+  getMessageBody(command: string): string {
     const message = command.split(/\s(.+)/)[1];
     return message || '';
   }
 
   instructions() {
-    const command = '';
+    const command: string = '';
     const smsNumber: string = this.getDestination(command);
     const message: string = this.getMessageBody(command);
 

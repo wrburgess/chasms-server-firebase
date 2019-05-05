@@ -131,7 +131,7 @@ class Contact {
         return await Contact.create({ organizationId, [field]: val });
       }
     } catch (err) {
-      console.error('User > findByVal: ', err);
+      console.error('Contact > findByVal: ', err);
       return null;
     }
   }
@@ -147,7 +147,45 @@ class Contact {
 
       return querySnapshot;
     } catch (err) {
-      console.error('User > whereByVal: ', err);
+      console.error('Contact > whereByVal: ', err);
+      return null;
+    }
+  }
+
+  static async renderDirectoryList(organizationId: string) {
+    try {
+      const attachments: Array<any> = [];
+      const contacts: any = await Contact.all({ organizationId });
+
+      const contactNames = contacts.map(contact => {
+        return `${contact.lastName}, ${contact.firstName}`;
+      });
+
+      const contactInfo = contacts.map(contact => {
+        return `\`+${contact.username}\` or \`+${contact.completeSmsNumber}\``;
+      });
+
+      const table: any = {
+        fallback: 'Table of Contacts',
+        fields: [
+          {
+            title: 'Contact',
+            value: contactNames.join('\n'),
+            short: true,
+          },
+          {
+            title: 'Message with /sms',
+            value: contactInfo.join('\n'),
+            short: true,
+          },
+        ],
+        color: '#0269b7',
+      };
+
+      attachments.push(table);
+      return attachments;
+    } catch (err) {
+      console.error('Contact > renderDirectoryList: ', err);
       return null;
     }
   }

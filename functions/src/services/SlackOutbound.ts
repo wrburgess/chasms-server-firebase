@@ -9,7 +9,7 @@ class SlackOutbound {
         headers: { Authorization: `Bearer ${slackResponse.token}` },
       };
 
-      axios.post(
+      await axios.post(
         SLACK_PUBLIC_MESSAGE_URI,
         {
           ...slackResponse,
@@ -27,11 +27,13 @@ class SlackOutbound {
         headers: { Authorization: `Bearer ${slackResponse.token}` },
       };
 
-      const payload = {
-        ...slackResponse,
-      };
-
-      axios.post(SLACK_EPHEMERAL_MESSAGE_URI, payload, config);
+      await axios.post(
+        SLACK_EPHEMERAL_MESSAGE_URI,
+        {
+          ...slackResponse,
+        },
+        config,
+      );
     } catch (err) {
       console.error('SlackOutbound > sendEphemeralMessage: ', err);
     }

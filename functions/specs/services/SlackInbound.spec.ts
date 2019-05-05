@@ -411,4 +411,124 @@ describe('services/SlackInbound', () => {
 
     return expect(SlackInbound.processMessage({ req: slackRequest, organization })).resolves.toEqual(message);
   });
+
+  it('renders the correct Message object from a Slack command of `dir`', () => {
+    const messageBody = 'dir';
+    const messageId = faker.random.uuid();
+    const slackChannelId = faker.random.uuid();
+    const operator = new OperatorFactory({});
+
+    const slackMessageBody = messageBody;
+
+    const slackRequest = new SlackRequestFactory({
+      channel_id: slackChannelId,
+      user_name: operator.slackUserName,
+      text: slackMessageBody,
+    });
+
+    const organization = new OrganizationFactory({});
+
+    const channel = new ChannelFactory({
+      slackChannelId,
+    });
+
+    organization.channels[channel.id] = channel;
+    organization.slackChannelIds.push[slackChannelId];
+
+    const attachments = [
+      {
+        fallback: 'Table of Contacts',
+        fields: [
+          {
+            title: 'Contact',
+            value: ', \nBurgess, Randy\nLangley, \nSprat, Jack',
+            short: true,
+          },
+          {
+            title: 'Message with /sms',
+            value:
+              '`+` or `++17735516808`\n`+rbdd` or `++12314567896`\n`+bubba123` or `++17651239876`\n`+jsprat` or `++19587458651`',
+            short: true,
+          },
+        ],
+        color: '#0269b7',
+      },
+    ];
+
+    const message = new MessageFactory({
+      id: messageId,
+      status: 200,
+      type: messageTypes.SLACK_INBOUND,
+      requestBody: slackRequest.text,
+      validRequest: true,
+      archived: false,
+      attachments: [],
+      tags: [],
+      source: {
+        type: sourceTypes.SLACK,
+        meta: {
+          ...slackRequest,
+        },
+      },
+      author: {
+        type: authorTypes.OPERATOR,
+        id: operator.id,
+        firstName: operator.firstName,
+        lastName: operator.lastName,
+        username: operator.username,
+        completeSmsNumber: operator.completeSmsNumber,
+        email: operator.email,
+      },
+      organization: {
+        id: organization.id,
+        name: organization.name,
+      },
+      channelResponse: {
+        body: '',
+        id: '',
+        name: '',
+        status: false,
+      },
+      apiResponse: {
+        status: false,
+        body: '',
+      },
+      slackResponse: {
+        as_user: false,
+        attachments,
+        channel: slackRequest.channel_id,
+        link_names: true,
+        response_type: slackResponseTypes.EPHEMERAL,
+        status: true,
+        text: 'Contact List',
+        token: slackRequest.token,
+        user: slackRequest.user_id,
+      },
+      smsResponse: {
+        body: '',
+        contact: {
+          id: '',
+          firstName: '',
+          lastName: '',
+          completeSmsNumber: '',
+          username: '',
+        },
+        status: false,
+        twilioAccountPhoneNumber: '',
+        twilioAuthToken: '',
+        twilioSid: '',
+      },
+    });
+
+    const asyncContactDirectoryListMock: any = jest.spyOn(Contact, 'renderDirectoryList');
+    asyncContactDirectoryListMock.mockResolvedValue(attachments);
+    const asyncOperatorMock: any = jest.spyOn(Operator, 'findByValOrCreate');
+    asyncOperatorMock.mockResolvedValue(operator);
+    const asyncMessageMock: any = jest.spyOn(Message, 'create');
+    asyncMessageMock.mockResolvedValue(message);
+    const AutoIdMock: any = jest.spyOn(AutoId, 'newId');
+    AutoIdMock.mockImplementation(() => messageId);
+
+    return expect(SlackInbound.processMessage({ req: slackRequest, organization })).resolves.toEqual(message);
+  });
 });

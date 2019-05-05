@@ -1,5 +1,6 @@
 import Organization from '../models/Organization';
 import Operator from '../models/Operator';
+import Contact from '../models/Contact';
 import Message from '../models/Message';
 import AutoId from '../utilities/AutoId';
 import processCommand from '../utilities/processCommand';
@@ -8,6 +9,7 @@ import * as authorTypes from '../constants/authorTypes';
 import * as slackResponseTypes from '../constants/slackResponseTypes';
 import * as messageTypes from '../constants/messageTypes';
 import * as commandTypes from '../constants/commandTypes';
+import Distribution from '../services/Distribution';
 
 class SlackInbound {
   // {
@@ -65,7 +67,7 @@ class SlackInbound {
     }
 
     let slackResponse: any = {};
-    if (channel.usesSlack && command.type !== commandTypes.INVALID) {
+    if (channel.usesSlack && command.type === commandTypes.OUTBOUND_SMS) {
       slackResponse = {
         as_user: false,
         attachments: [],
@@ -76,6 +78,18 @@ class SlackInbound {
         text: `+${contact.username} ${command.messageBody}`,
         token: req.token,
         user: '',
+      };
+    } else if (channel.usesSlack && command.type === commandTypes.RENDER_DIRECTORY) {
+      slackResponse = {
+        as_user: false,
+        attachments: await Contact.renderDirectoryList(organization.id),
+        channel: req.channel_id,
+        link_names: true,
+        response_type: slackResponseTypes.EPHEMERAL,
+        status: true,
+        text: 'Contact List',
+        token: req.token,
+        user: req.user_id,
       };
     } else if (channel.usesSlack && command.type === commandTypes.INVALID) {
       slackResponse = {
@@ -92,7 +106,7 @@ class SlackInbound {
     }
 
     let channelResponse: any = {};
-    if (channel.id && command.type !== commandTypes.INVALID) {
+    if (channel.id && command.type !== commandTypes.INVALID && command.type !== commandTypes.RENDER_DIRECTORY) {
       channelResponse = {
         body: `+${contact.username} ${command.messageBody}`,
         id: channel.id,
@@ -151,8 +165,8 @@ class SlackInbound {
       },
     };
 
-    // console.log('message', message);
     Message.create(message);
+    Distribution.processMessage(message);
 
     return message;
   }

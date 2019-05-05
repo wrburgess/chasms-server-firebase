@@ -6,8 +6,8 @@ import extractMessageFromCommand from './extractMessageFromCommand';
 const completeSmsNumberAndText = /^\+1\d{10}\ .+$/; // +11234567890
 const commandSmsNumberAndText = /^\+\d{10}\ .+$/; // +1234567890
 const leadingUsername = /^\++\S+/; // +ab
-const add = /^add\ .+$/;
-const dir = /^dir\ .*$/;
+const add = /^add\ .+$/; // add +11234567890
+const dir = /^dir$/; // dir
 
 const processCommand: any = async function({ command, organization }) {
   let completeSmsNumber: string = '';

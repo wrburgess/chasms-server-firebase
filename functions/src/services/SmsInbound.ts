@@ -133,7 +133,6 @@ class SmsInbound {
       },
     };
 
-    // console.log('message', message);
     Message.create(message);
 
     return message;
